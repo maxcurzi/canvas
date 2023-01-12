@@ -1,15 +1,15 @@
 .grid {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    grid-template-rows: repeat(10, 1fr);
+    grid-template-columns: repeat(32, 1fr);
+    grid-template-rows: repeat(32, 1fr);
 }
 
 .box {
     width: 10px;
     height: 10px;
-    background-color: gray;
+    background-color: #606060FF;
 }
 
 .clicked {
-    background-color: blue;
+    background-color: #D6ED17FF;
 }

@@ -1,4 +1,5 @@
 import { initializeApp } from 'firebase/app';
+import { getDatabase, set, ref } from 'firebase/database'
 
 const firebaseConfig = {
     apiKey: 'AIzaSyBGp94K5gwWumKhr4CrNPf51l0vKaFAHQY',
@@ -19,4 +20,12 @@ const firebaseConfig = {
       'https://canvas-f06e2-default-rtdb.europe-west1.firebasedatabase.app',
   };
 
+export const resetGrid = (size) => {
+    const db = getDatabase(firebaseApp);
+    const pixels = {};
+    for (let i = 0; i < size*size; i++) {
+        pixels[i] = false;
+    }
+    set(ref(db, 'pixels'), pixels);
+}
 export const firebaseApp = initializeApp(firebaseConfig);
