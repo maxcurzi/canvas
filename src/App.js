@@ -3,8 +3,6 @@ import Grid from './components/Grid';
 import { firebaseApp, resetGrid } from './Firebase';
 import { useState } from 'react';
 
-import Login from './components/Login'
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import LogIn from './components/LogIn';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 

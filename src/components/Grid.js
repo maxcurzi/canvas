@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import './styles/grid.css';
 import { firebaseApp, resetGrid } from '../Firebase';
-import { getDatabase, ref, push, set, onValue , get, child, update} from 'firebase/database';
-
+import { getDatabase, ref, set, onValue , get, child, update} from 'firebase/database';
+import React from 'react';
 
 class Grid extends React.Component{
   constructor(props) {
