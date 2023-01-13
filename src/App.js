@@ -9,6 +9,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 function App() {
   const [user, setUser] = useState(null)
+  const gridSize = 32;
   const isAuthenticated = () => {
     return user !== null;
   }
@@ -22,8 +23,8 @@ function App() {
 });
   return (
     <div className="App">
-      <Grid isAuthenticated={isAuthenticated}/>
-      <button onClick={function () { if (user!==null) {resetGrid(32)} }}>Reset</button>
+      <Grid isAuthenticated={isAuthenticated} gridSize={gridSize}/>
+      <button onClick={function () { if (user!==null) {resetGrid(gridSize)} }}>Reset</button>
       <LogIn auth={auth} />
     </div>
   );

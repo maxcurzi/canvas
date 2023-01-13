@@ -5,25 +5,24 @@ import React from 'react';
 
 class Grid extends React.Component{
   constructor(props) {
-    console.log(props.user)
     super(props);
     this.state = {
-      pixelArray: Array(32 * 32).fill(0),
-      user: props.user,
+      pixelArray: Array(props.gridSize * props.gridSize).fill(0),
+      gridSize: props.gridSize,
     };
     const db = getDatabase(firebaseApp);
     const dbRef = ref(db);
     get(child(dbRef, 'pixels')).then((snapshot) => {
       // update the state with the data from the Firebase database
       // or set it to a default value if it's null
-      this.state = { pixelArray: snapshot.val() || Array(32*32).fill(0) };
+      this.state = { pixelArray: snapshot.val() || Array(this.state.gridSize*this.state.gridSize).fill(0) };
       if (snapshot.val() === null) {
         console.log("database empty, reinitialize state");
         resetGrid();
       }
-      set(ref(db,'/'), {
-        pixels: this.state.pixelArray
-      })
+      // set(ref(db,'/'), {
+      //   pixels: this.state.pixelArray
+      // })
     });
   }
 
@@ -43,17 +42,18 @@ class Grid extends React.Component{
   componentDidMount() {
     const db = getDatabase(firebaseApp);
     const dbRef = ref(db, 'pixels');
-
     onValue(dbRef, (snapshot) => {
       let newPixels = Object.values(snapshot.val())
-      this.setState({ pixelArray: newPixels, user: this.state.user });
-
+      this.setState({ pixelArray: newPixels});
     });
   }
 
   render() {
     return (
-      <div className="grid">
+      <div className="grid" style={{
+        'gridTemplateColumns': `repeat(${this.state.gridSize}, 1fr)`,
+        'gridTemplateRows': `repeat(${this.state.gridSize}, 1fr)`
+      }}>
         {this.state.pixelArray.map((pixel, index) => {
           return <div
             className={`box color${pixel}`}

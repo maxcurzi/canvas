@@ -1,7 +1,7 @@
 .grid {
     display: grid;
-    grid-template-columns: repeat(32, 10px);
-    grid-template-rows: repeat(32, 10px);
+    /* grid-template-columns: repeat(32, 10px);
+    grid-template-rows: repeat(32, 10px); */
     background-color: red;
 }
 

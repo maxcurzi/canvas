@@ -5,5 +5,41 @@
 }
 
 .authbox {
-  width: 300px;
+  width: 400px;
+  justify-content: left;
+}
+
+button.clicked,
+button:hover {
+  background-color: rgb(60, 67, 154);
+  border-color: rgb(60, 67, 154);
+  color: white;
+  outline-color: rgb(60, 67, 154);
+}
+
+button,
+button.firebaseui-id-submit.mdl-button--raised.mdl-button--colored {
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0);
+  border-color: rgb(60, 67, 154);
+  border-radius: 4px;
+  border-style: solid;
+  border-width: 1px;
+  box-shadow: none;
+  color: rgb(60, 67, 154);
+  cursor: default;
+  display: inline-flex;
+  font-family: Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  height: 36px;
+  justify-content: center;
+  margin: 8px 16px;
+  outline-color: rgb(60, 67, 154);
+  overflow: hidden;
+  padding: 0px 15px;
+  position: relative;
+  text-align: center;
+  text-transform: uppercase;
+  vertical-align: middle;
 }
