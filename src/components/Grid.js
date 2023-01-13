@@ -1,6 +1,6 @@
 import './styles/grid.css';
 import { firebaseApp, resetGrid } from '../Firebase';
-import { getDatabase, ref, set, onValue , get, child, update} from 'firebase/database';
+import { getDatabase, ref, set, onValue ,push, get, child, update} from 'firebase/database';
 import React from 'react';
 
 class Grid extends React.Component{
@@ -32,8 +32,18 @@ class Grid extends React.Component{
       const db = getDatabase(firebaseApp);
       const dbRef = ref(db);
       const pixels = {};
-      pixels['/pixels/' + index] = (this.state.pixelArray[index]+1)%8;
-      update(dbRef, pixels);
+      // pixels['/pixels/' + index] = (this.state.pixelArray[index]+1)%8;
+      // update(dbRef, pixels);
+      const postListRef = ref(db, 'requests');
+      const newPostRef = push(postListRef);
+      set(newPostRef, {
+        userId: this.props.user.uid,
+        userDisplayName: this.props.user.displayName,
+        timestamp: Date.now(),
+        pixelReq: index,
+      });
+
+
     } else {
         console.log("User is not authenticated.");
     }

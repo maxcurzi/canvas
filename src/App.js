@@ -23,7 +23,7 @@ function App() {
 });
   return (
     <div className="App">
-      <Grid isAuthenticated={isAuthenticated} gridSize={gridSize}/>
+      <Grid isAuthenticated={isAuthenticated} gridSize={gridSize} user={user} />
       {user && user.uid === "UNWpWi32gPXW35xGEM08l2Tli9i2" ? <button onClick={function () { if (user !== null) { resetGrid(gridSize) } }}>Reset</button> : null}
       <LogIn auth={auth} />
     </div>
