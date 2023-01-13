@@ -34,7 +34,7 @@ class Grid extends React.Component{
       const db = getDatabase(firebaseApp);
       const dbRef = ref(db);
       const pixels = {};
-      pixels['/pixels/' + index] = 1;
+      pixels['/pixels/' + index] = (this.state.pixelArray[index]+1)%8;
       update(dbRef, pixels);
     } else {
         console.log("User is not authenticated.");

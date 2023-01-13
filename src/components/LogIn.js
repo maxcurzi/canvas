@@ -50,10 +50,9 @@ const LogIn = (props) => {
     };
 
     return (
-        <div>
-            <h2>Authentication...</h2>
+        <div className='authbox'>
             {user ? <button onClick={() => signOut(props.auth)}>Logout</button> : <section id={'firebaseui-auth-container'}></section>}
-            <h3>................</h3>
+            {user ? <h3></h3> : <h3>Log in and verify your email to be able to update the grid.</h3>}
         </div>
     )
 }
