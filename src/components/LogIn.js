@@ -13,6 +13,7 @@ import {
 
 const LogIn = (props) => {
   const [user, setUser] = useState(null)
+  const [userVerified, setUserVerified] = useState(false)
   useEffect(() => {
     if (user){
     }
@@ -24,10 +25,9 @@ const LogIn = (props) => {
 
   // Listen to the current Auth state
   onAuthStateChanged(props.auth, (user) => {
-    if ((user) && (user.emailVerified)) {
-      setUser(user)
-    } else {
-      setUser(null)
+    setUser(user)
+    if (user) {
+      setUserVerified(user.emailVerified)
     }
   });
 
@@ -53,7 +53,7 @@ const LogIn = (props) => {
   return (
     <div>
       {user ? <button onClick={() => signOut(props.auth)}>Logout</button> : <section className='authbox left-aligned' id={'firebaseui-auth-container'}></section>}
-      {user ? <h3></h3> : <h3 className='authbox left-aligned'>Log in and verify your email to be able to update the grid.</h3>}
+      {userVerified ? <h3></h3> : <h3 className='authbox left-aligned'>Verify your email and refresh this page to be able to play.</h3>}
     </div>
   )
 }
