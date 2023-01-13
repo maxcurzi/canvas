@@ -1,15 +1,48 @@
 .grid {
     display: grid;
-    grid-template-columns: repeat(32, 1fr);
-    grid-template-rows: repeat(32, 1fr);
+    grid-template-columns: repeat(32, 10px);
+    grid-template-rows: repeat(32, 10px);
+    background-color: red;
+}
+
+
+.clicked {
+    background-color: #D6ED17FF;
 }
 
 .box {
     width: 10px;
     height: 10px;
-    background-color: #606060FF;
 }
 
-.clicked {
-    background-color: #D6ED17FF;
+.box.color0 {
+    background-color: #000000;
+}
+
+.box.color1 {
+    background-color: #FFFFFF;
+}
+
+.box.color2 {
+    background-color: #ff0000;
+}
+
+.box.color3 {
+    background-color: #00FF00;
+}
+
+.box.color4 {
+    background-color: #0000FF;
+}
+
+.box.color5 {
+    background-color: #00FFFF;
+}
+
+.box.color6 {
+    background-color: #FF00FF;
+}
+
+.box.color7 {
+    background-color: #FFFF00;
 }

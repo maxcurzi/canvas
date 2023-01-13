@@ -6,33 +6,39 @@ import { getDatabase, ref, push, set, onValue , get, child, update} from 'fireba
 
 class Grid extends React.Component{
   constructor(props) {
+    console.log(props.user)
     super(props);
     this.state = {
-        clickedPixels: Array(160*160).fill(false),
+      pixelArray: Array(32 * 32).fill(0),
+      user: props.user,
     };
     const db = getDatabase(firebaseApp);
     const dbRef = ref(db);
     get(child(dbRef, 'pixels')).then((snapshot) => {
       // update the state with the data from the Firebase database
       // or set it to a default value if it's null
-      this.state = { clickedPixels: snapshot.val() || Array(160*160).fill(false) };
+      this.state = { pixelArray: snapshot.val() || Array(32*32).fill(0) };
       if (snapshot.val() === null) {
         console.log("database empty, reinitialize state");
         resetGrid();
       }
       set(ref(db,'/'), {
-        pixels: this.state.clickedPixels
+        pixels: this.state.pixelArray
       })
     });
   }
 
   handleClick(event, index) {
-    // send the click event to the Firebase server
-    const db = getDatabase(firebaseApp);
-    const dbRef = ref(db);
-    const pixels = {};
-    pixels['/pixels/' + index] = true;
-    update(dbRef, pixels);
+    if (this.props.isAuthenticated()) {
+      // process the click event and update Firebase database
+      const db = getDatabase(firebaseApp);
+      const dbRef = ref(db);
+      const pixels = {};
+      pixels['/pixels/' + index] = 1;
+      update(dbRef, pixels);
+    } else {
+        console.log("User is not authenticated.");
+    }
   }
 
   componentDidMount() {
@@ -40,23 +46,24 @@ class Grid extends React.Component{
     const dbRef = ref(db, 'pixels');
 
     onValue(dbRef, (snapshot) => {
-        let newPixels = Object.values(snapshot.val())
-        this.setState({clickedPixels: newPixels});
+      let newPixels = Object.values(snapshot.val())
+      this.setState({ pixelArray: newPixels, user: this.state.user });
+
     });
   }
 
   render() {
     return (
-        <div className="grid">
-            {this.state.clickedPixels.map((pixel, index) => (
-                <div
-                    className={`box ${pixel ? 'clicked' : ''}`}
-                    onClick={(event) => this.handleClick(event, index)}
-                    key={index}
-                />
-            ))}
-        </div>
-    );
+      <div className="grid">
+        {this.state.pixelArray.map((pixel, index) => {
+          return <div
+            className={`box color${pixel}`}
+            onClick={(event) => { this.handleClick(event, index)} }
+            key={index}
+          />
+        })}
+      </div>
+        )
   }
 };
 

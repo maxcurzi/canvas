@@ -1,5 +1,11 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, set, ref } from 'firebase/database'
+import {
+    getAuth,
+    EmailAuthProvider,
+    signOut,
+    onAuthStateChanged,
+  } from 'firebase/auth';
 
 const firebaseConfig = {
     apiKey: 'AIzaSyBGp94K5gwWumKhr4CrNPf51l0vKaFAHQY',
@@ -24,7 +30,7 @@ export const resetGrid = (size) => {
     const db = getDatabase(firebaseApp);
     const pixels = {};
     for (let i = 0; i < size*size; i++) {
-        pixels[i] = false;
+        pixels[i] = 0;
     }
     set(ref(db, 'pixels'), pixels);
 }
