@@ -9,7 +9,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 function App() {
   const [user, setUser] = useState(null)
-  const gridSize = 32;
+  const gridSize = 48;
   const isAuthenticated = () => {
     return user !== null;
   }
