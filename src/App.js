@@ -6,6 +6,8 @@ import { useState } from 'react';
 import LogIn from './components/LogIn';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
+import { getPerformance } from "firebase/performance";
+
 
 function App() {
   const [user, setUser] = useState(null)
@@ -14,6 +16,9 @@ function App() {
     return user !== null;
   }
   const auth = getAuth(firebaseApp);
+
+  const perf = getPerformance(firebaseApp);
+
   onAuthStateChanged(auth, (user) => {
     if ((user) && (user.emailVerified)) {
         setUser(user)
