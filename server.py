@@ -79,11 +79,13 @@ def manage_requests(dbm: DbManager):
         for key in data.keys():
             req = ref.child(key).get()
             if isinstance(req, dict):
-                new_pixels[req["pixelReq"]] = pixel_data[req["pixelReq"]] + 1
-                new_pixels[req["pixelReq"]] %= 8
+                if req["pixelReq"] < 48 * 48:
+                    new_pixels[req["pixelReq"]] = pixel_data[req["pixelReq"]] + 1
+                    new_pixels[req["pixelReq"]] %= 8
 
             ref.child(key).delete()
-        dbm._pixel_ref.update(new_pixels)
+        if new_pixels:
+            dbm._pixel_ref.update(new_pixels)
         # Now you can work with the requests data
 
 
