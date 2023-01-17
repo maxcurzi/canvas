@@ -11,7 +11,7 @@ class Team(Enum):
 
 
 class Game:
-    def __init__(self, width: int, height: int) -> None:
+    def __init__(self, width: int, height: int, framerate: int = 60) -> None:
         pygame.init()
         self.screen = pygame.display.set_mode((width, height))
         self.player: Game.Human = Game.Human((0, 255, 0), 1, 56)
@@ -23,6 +23,7 @@ class Game:
         self.resolution = (width, height)
         self.clock = pygame.time.Clock()
         self.all_sprites.add(self.player)
+        self.framerate = framerate
 
     def _draw_aliens(self):
         for alien in self.aliens:
@@ -59,10 +60,10 @@ class Game:
                 )
                 > 0
             ):
-                alien.health -= 1
+                alien.health -= 3
         for alien in self.aliens:
             if len(pygame.sprite.spritecollide(alien, self.shields, dokill=True)) > 0:
-                pass
+                alien.health -= 1
         for shield in self.shields:
             if (
                 len(
@@ -102,7 +103,7 @@ class Game:
         window_width, window_height = pygame.display.get_surface().get_size()
         # pygame.display.set_mode((640, 640))
         pygame.display.flip()
-        self.clock.tick(60)
+        self.clock.tick(self.framerate)
         pass
 
     class Alien(pygame.sprite.Sprite):
@@ -140,7 +141,7 @@ class Game:
                 self.rect.x += self.dx
                 self.hb_rect.x += self.dx
                 self.hb_rect.width = max(0, self.health)
-                if (self.dx > 0 and self.rect.x - self.x0 >= 27) or (
+                if (self.dx > 0 and self.rect.x - self.x0 >= 15) or (
                     self.dx < 0 and self.rect.x - self.x0 <= 0
                 ):
                     self.dx = -self.dx
@@ -240,19 +241,23 @@ class Game:
 
 
 def start_game():
-    game = Game(64, 64)
-
-    alien0 = Game.Alien((255, 255, 0), 1, 2)
-    alien1 = Game.Alien((255, 255, 0), 13, 2)
-    alien2 = Game.Alien((255, 255, 0), 25, 2)
-
-    game.aliens.add(alien0)
-    game.aliens.add(alien1)
-    game.aliens.add(alien2)
-
-    game.all_sprites.add(alien0)
-    game.all_sprites.add(alien1)
-    game.all_sprites.add(alien2)
+    game = Game(64, 64, 600)
+    alien_locations = [
+        (1, 2),
+        (13, 2),
+        (25, 2),
+        (37, 2),
+        (1, 13),
+        (13, 13),
+        (25, 13),
+        (37, 13),
+    ]
+    aliens = []
+    for (x, y) in alien_locations:
+        alien = Game.Alien((255, 255, 0), x, y)
+        aliens.append(alien)
+        game.aliens.add(alien)
+        game.all_sprites.add(alien)
 
     t = 0
     while game.winner() == None:
@@ -264,31 +269,18 @@ def start_game():
             )
             game.shields.add(shield)
             game.all_sprites.add(shield)
-        if t % random.randint(10, 80) == 0:
+        if t % random.randint(5, 80) == 0:
             rocket = Game.Rocket(
                 (255, 0, 255), game.player.rect.x + 5, game.player.rect.y - 1
             )
             game.player_rockets.add(rocket)
             game.all_sprites.add(rocket)
 
-        if t % random.randint(10, 300) == 0:
-            if alien0.alive():
+        if t % random.randint(4, 50) == 0:
+            al = aliens[random.randint(0, len(alien_locations) - 1)]
+            if al.alive():
                 rocket = Game.Rocket(
-                    (255, 0, 0), alien0.rect.x + 5, alien0.rect.y + 5, friendly=False
-                )
-                game.enemies_rockets.add(rocket)
-                game.all_sprites.add(rocket)
-        if t % random.randint(10, 300) == 0:
-            if alien1.alive():
-                rocket = Game.Rocket(
-                    (255, 0, 0), alien1.rect.x + 5, alien1.rect.y + 5, friendly=False
-                )
-                game.enemies_rockets.add(rocket)
-                game.all_sprites.add(rocket)
-        if t % random.randint(10, 300) == 0:
-            if alien2.alive():
-                rocket = Game.Rocket(
-                    (255, 0, 0), alien2.rect.x + 5, alien2.rect.y + 5, friendly=False
+                    (255, 0, 0), al.rect.x + 5, al.rect.y + 5, friendly=False
                 )
                 game.enemies_rockets.add(rocket)
                 game.all_sprites.add(rocket)
