@@ -1,0 +1,3 @@
+[submodule "games/invaders"]
+	path = games/invaders
+	url = https://github.com/maxcurzi/canvas-game-invaders
