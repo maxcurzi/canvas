@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import pygame
 from enum import Enum, auto
 from PIL import Image, ImageOps
