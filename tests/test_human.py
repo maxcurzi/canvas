@@ -1,4 +1,4 @@
-from ..invaders import Game
+from invaders import Game
 import pygame
 import pytest
 
