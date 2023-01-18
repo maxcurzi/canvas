@@ -2,6 +2,10 @@ from ..invaders import Game, Team
 import pygame
 import pytest
 
+import os
+
+os.environ["SDL_VIDEODRIVER"] = "dummy"
+
 
 @pytest.fixture
 def default_setup():
