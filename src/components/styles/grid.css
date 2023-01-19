@@ -2,12 +2,19 @@
     display: grid;
     /* grid-template-columns: repeat(32, 10px);
     grid-template-rows: repeat(32, 10px); */
-    background-color: red;
+    background-color: white;
+    min-width: 1px;
 }
 
 .box {
-    width: 10px;
-    height: 10px;
+    width: 6px;
+    height: 6px;
+    /* margin: 1px; */
+    border: #ff0000;
+    padding: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
 }
 
 .box.color0 {
@@ -93,4 +100,8 @@
 
 .box.color180 {
     background-color: #d2aa99;
+}
+
+.box.color255 {
+    background-color: #FFFFFF;
 }
