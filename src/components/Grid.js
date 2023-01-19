@@ -3,12 +3,27 @@ import { firebaseApp, resetGrid } from '../Firebase';
 import { getDatabase, ref, set, onValue ,push, get, child, update} from 'firebase/database';
 import React from 'react';
 
+// async function handleClick(x, y) {
+//   const username = "your_username"; //  get it from your authentication context
+//   const response = await fetch('http://your_server_url:8000/update_pixel/', {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({ x, y, username }),
+//   });
+//   const json = await response.json();
+//   if (!response.ok) {
+//       throw new Error(json.message);
+//   }
+//   // do something with the json response
+// }
+
 class Grid extends React.Component{
   constructor(props) {
     super(props);
     this.state = {
       pixelArray: Array(props.gridSize * props.gridSize).fill(0),
       gridSize: props.gridSize,
+      lastClickTime: 0,
     };
     const db = getDatabase(firebaseApp);
     const dbRef = ref(db);
@@ -25,8 +40,25 @@ class Grid extends React.Component{
       // })
     });
   }
+  handleClick = async (x_value, y_value, user_value) => {
+    console.log(this.props.user.displayName)
+    let data = {x: x_value, y: y_value, user: user_value};
+    let jsoninfo = JSON.stringify(data);
+    console.log(jsoninfo)
+    const response = await fetch('http://127.0.0.1:8000/update_pixel/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: jsoninfo
+    });
+    const json = await response.json();
+    if (!response.ok) {
+        console.log("Unsuccessful request!");
+        throw new Error(json.message);
+    }
+    console.log("Successful request!");
+  }
 
-  handleClick(event, index) {
+  handleClick_direct_to_server(event, index) {
     if (this.props.isAuthenticated()) {
       // process the click event and update Firebase database
       const db = getDatabase(firebaseApp);
@@ -65,9 +97,20 @@ class Grid extends React.Component{
         'gridTemplateRows': `repeat(${this.state.gridSize}, 1fr)`
       }}>
         {this.state.pixelArray.map((pixel, index) => {
+          const x = index  % this.state.gridSize
+          const y = Math.floor(index / this.state.gridSize)
           return <div
             className={`box color${pixel}`}
-            onClick={(event) => { this.handleClick(event, index)} }
+            onClick={(event) => {
+              let now_t = Date.now()
+              if ( now_t - this.state.lastClickTime > 1000) {
+                this.state.lastClickTime = now_t
+                this.handleClick(x, y, this.props.user.uid == null ? "UID_NA" : this.props.user.uid)
+              }
+              else {
+                console.log("You're clicking too fast!")
+              }
+            }}
             key={index}
           />
         })}
