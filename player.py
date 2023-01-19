@@ -85,10 +85,65 @@ def play_gb(rom: str):
                     video_updater.update(frames_dict[0])
 
 
+from games.interface import CanvasApp
+from invaders import Game as SpaceInvaders
+
+
+class CanvasInvaders(SpaceInvaders, CanvasApp):
+    pass
+
+
+import random
+
+
+def serve_clicks(dbm: DbManager, game: CanvasApp):
+    # Use a transaction to read and delete all the data
+    ref = dbm._req_ref
+    # Read the data
+    data = ref.get()
+    # print(pixel_data)
+    # iterate over the keys
+    if isinstance(data, dict):
+        for key in data.keys():
+            req = ref.child(key).get()
+            if isinstance(req, dict):
+                if (px := req["pixelReq"]) < 64 * 64:
+                    game.click_at(px % 64, px / 64, req["userDisplayName"])
+
+            ref.child(key).delete()
+
+
+def play_invaders(dbm: DbManager):
+    fps = 2
+    video_updater = TimedCall(func=dbm.update, interval=1 / fps)
+    game = CanvasInvaders(framerate=fps)
+    t = 0
+    while True:
+        game.update()
+        frame = np.array(game.frame.convert("P"))
+        frames_dict = {}
+        for j, v in enumerate(frame.flatten()):
+            frames_dict[j] = v
+        t += 1
+        # if t % random.randint(5, 8) == 0:
+        # game.click_at(random.randint(0, 63), random.randint(10, 60), "Random" + str(t))
+        serve_clicks(dbm=dbm, game=game)
+        if video_updater.update(frames_dict):
+            pass
+        time.sleep(0)
+
+    A = CanvasInvaders()
+    while True:
+        A.update()
+        print(A.owners_map)
+        A.click_at(10, 60, "Some_owner")
+
+
 if __name__ == "__main__":
 
     dbm = DbManager(
         url="https://canvas-f06e2-default-rtdb.europe-west1.firebasedatabase.app"
     )
-    play_video(dbm, Path("assets", "phant_cropped_small.gif"))
+    # play_video(dbm, Path("assets", "phant_cropped_small.gif"))
     # play_gb("assets/gbroms/Tetris.gb")
+    play_invaders(dbm)
