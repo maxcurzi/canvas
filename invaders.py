@@ -12,6 +12,7 @@ from itertools import product
 import os
 import argparse
 from datetime import datetime
+import numpy as np
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -81,7 +82,9 @@ class Game:
 
     @property
     def frame(self):
-        return Image.fromarray(pygame.surfarray.array3d(self.screen)).rotate(-90)
+        return Image.fromarray(np.flipud(pygame.surfarray.array3d(self.screen))).rotate(
+            -90
+        )
 
     def defaults(self):
         alien_locations = [
@@ -142,7 +145,9 @@ class Game:
             if len(alien_clicked) > 0:
                 alien_clicked[0].enqueue_rocket(user_input.owner)
                 self.pixel_inputs.remove(user_input)
-                print(f"Clicked on Alien {user_input.rect.x},{user_input.rect.y}")
+                print(
+                    f"{user_input.owner} Clicked on Alien {user_input.rect.x},{user_input.rect.y}"
+                )
 
         # Check if user clicked on Human
         human_clicked_by = pygame.sprite.spritecollide(
@@ -150,7 +155,9 @@ class Game:
         )
 
         for user_input in human_clicked_by:
-            print(f"Clicked on Human {user_input.rect.x},{user_input.rect.y}")
+            print(
+                f"{user_input.owner} Clicked on Human {user_input.rect.x},{user_input.rect.y}"
+            )
             self.human.enqueue_rocket(user_input.owner)
             self.pixel_inputs.remove(user_input)
 
@@ -163,7 +170,9 @@ class Game:
                 self.pixel_inputs.remove(user_input)
 
         for user_input in self.pixel_inputs:
-            print(f"Placed a Shield {user_input.rect.x},{user_input.rect.y}")
+            print(
+                f"{user_input.owner} Placed a Shield {user_input.rect.x},{user_input.rect.y}"
+            )
             shield = Game.Shield(
                 user_input.rect.x, user_input.rect.y, owner=user_input.owner
             )
@@ -172,6 +181,25 @@ class Game:
         self.pixel_inputs = pygame.sprite.Group()
 
     def _handle_collisions(self):
+        # Elide rockets hitting each other
+        for rocket in self.enemies_rockets:
+            collided = pygame.sprite.spritecollide(
+                rocket, self.human_rockets, dokill=False
+            )
+            if len(collided) > 0:
+                rocket.health -= 1
+            for c in collided:
+                c.health -= 1
+
+        for rocket in self.human_rockets:
+            collided = pygame.sprite.spritecollide(
+                rocket, self.enemies_rockets, dokill=False
+            )
+            if len(collided) > 0:
+                rocket.health -= 1
+            for c in collided:
+                c.health -= 1
+
         for alien in self.aliens:
             if (
                 len(pygame.sprite.spritecollide(alien, self.human_rockets, dokill=True))
@@ -227,7 +255,7 @@ class Game:
                 owner = alien.rocket_queue.popleft()
 
                 rocket = Game.Rocket(
-                    alien.rect.x + 5, alien.rect.y + 5, friendly=False, owner=owner
+                    alien.rect.x + 5, alien.rect.y + 6, friendly=False, owner=owner
                 )
                 self.enemies_rockets.add(rocket)
                 self.all_sprites.add(rocket)
@@ -317,7 +345,7 @@ class Game:
 
             self.owner = owner
             self.update_rate = 1
-            self.shoot_dt = 10
+            self.shoot_dt = random.randint(5, 7)
             self.t = 0
             self.dx = 1
             self.xmargin = 15  # TODO
@@ -371,7 +399,7 @@ class Game:
 
             self.owner = owner
             self.move_dt = 3
-            self.shoot_dt = 7
+            self.shoot_dt = 3
             self.t = 0
             self.dx = 1
             self.xmargin = 52
@@ -436,6 +464,8 @@ class Game:
 
         def update(self):
             super().update(self)
+            if self.health <= 0:
+                self.kill()
             self.rect.y = self.rect.y - 1 if self.friendly else self.rect.y + 1
 
 
