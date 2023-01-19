@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+""" Simple space invaders clone, to be used as a backend game for Canvas.
+TODO: Remove hardcoded values
+TODO: Output color/color palette along the image, to reproduce within Canvas.
+"""
 import pygame
 from enum import Enum, auto
 from PIL import Image, ImageOps
@@ -6,6 +10,8 @@ import random
 from collections import deque
 from itertools import product
 import os
+import argparse
+from datetime import datetime
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -40,7 +46,7 @@ class Game:
         self.framerate = framerate
         self.clock = pygame.time.Clock()
 
-        self.human = Game.Human(1, 56)
+        self.human = Game.Human(1, height - 8)
         self.aliens = pygame.sprite.Group()
         self.shields = pygame.sprite.Group()
         self.human_rockets = pygame.sprite.Group()
@@ -56,10 +62,16 @@ class Game:
             self.defaults()
 
     def click_at(self, x, y, owner=None):
+        """User inputs are clicks to the grid pixels, we add these inputs to a
+        queue for later processing, and we store an identifier of who clicked
+        it, for later retrieval/identification of who caused a certain effect."""
         click_sprite = Game.UserInput(x, y, owner)
         self.pixel_inputs.add(click_sprite)
 
     def owners_map(self):
+        """Each pixel can have an owner, for example when a player clicks on the
+        spaceship to shoot a rocket, the pixels composing the rocket will
+        'belong' to that user."""
         om = {}
         for entity in [*self.human_rockets, *self.enemies_rockets, *self.shields]:
             x, y, w, h = entity.rect
@@ -251,6 +263,10 @@ class Game:
             self.rect.width = max(0, value)
 
     class UserInput(pygame.sprite.Sprite):
+        """User inputs are 'clicked' pixels, here represented as a 1x1 pixel
+        transparent sprite. We can then leverage pygame collision detection to
+        determine later what did the player clicked."""
+
         def __init__(self, x, y, owner=None) -> None:
             super().__init__()
             self.surf = pygame.Surface([1, 1])
@@ -265,10 +281,11 @@ class Game:
             super().update(self)
 
     class Alien(pygame.sprite.Sprite):
-        # Constructor. Pass in the color of the block,
-        # and its x and y position
+        """Space invader alien. It can shoot rockets and has a healthbar
+        indicator and a rocket indicator.
+        """
+
         def __init__(self, x0, y0, owner=None):
-            # Call the parent class (Sprite) constructor
             pygame.sprite.Sprite.__init__(self)
             self.surf = pygame.image.load("alien.png").convert()
             self.surf.set_colorkey(Colors.COLOR_KEY.value)
@@ -306,14 +323,16 @@ class Game:
                 self.health_bar.x += self.dx
                 self.health_bar.width = self.health
                 self.rocket_bar.x += self.dx
-                self.rocket_bar.width = min(max(0, len(self.rocket_queue)), 5)
+                # Rocket bar intention is to span between the alien's two eyes.
+                # When drawn behind the alien it results in one or two 'red' (or
+                # whatever color the rocket bar is) eyes
+                self.rocket_bar.width = min(len(self.rocket_queue), 5)
                 if (self.dx > 0 and self.rect.x - self.x0 >= self.xmargin) or (
                     self.dx < 0 and self.rect.x - self.x0 <= 0
                 ):
                     self.dx = -self.dx
                     self.rect.y += 1
                     self.health_bar.y += 1
-                    # self.hb_rect.y += 1
                     self.rocket_bar.y += 1
 
         def enqueue_rocket(self, owner=None):
@@ -359,6 +378,7 @@ class Game:
                 self.health_bar.x += self.dx
                 self.health_bar.width = self.health
                 self.rocket_bar.x += self.dx
+                # Rocket bar intention is to span within the player ship's empty gap.
                 self.rocket_bar.width = min(len(self.rocket_queue), 7)
                 if (self.dx > 0 and self.rect.x >= self.xmargin) or (
                     self.dx < 0 and self.rect.x <= 0
@@ -388,14 +408,9 @@ class Game:
 
     class Rocket(pygame.sprite.Sprite):
         SHAPE = [1, 2]
-        # Constructor. Pass in the color of the block,
-        # and its x and y position
-        def __init__(self, x0, y0, owner=None, friendly=True):
-            # Call the parent class (Sprite) constructor
-            pygame.sprite.Sprite.__init__(self)
 
-            # Create an image of the block, and fill it with a color.
-            # This could also be an image loaded from the disk.
+        def __init__(self, x0, y0, owner=None, friendly=True):
+            pygame.sprite.Sprite.__init__(self)
             self.surf = pygame.Surface(self.SHAPE)
             color = (
                 Colors.FRIENDLY_ROCKET.value if friendly else Colors.ENEMY_ROCKET.value
@@ -414,8 +429,13 @@ class Game:
             self.rect.y = self.rect.y - 1 if self.friendly else self.rect.y + 1
 
 
-def random_game():
-    game = Game(framerate=30, use_defaults=True)
+def run_random_game(framerate):
+    """
+    Runs a game where the game is clicked at random  interval on random pixels.
+
+    :param framerate: Set game framerate
+    """
+    game = Game(framerate=framerate, use_defaults=True)
     t = 0
     im = game.update()
     while game.winner() == None:
@@ -426,10 +446,39 @@ def random_game():
                 random.randint(0, 63), random.randint(0, 63), "Random" + str(t)
             )
         im = game.update()
-    ImageOps.mirror(im).save("Screenshot.png")
-    print("Winner: " + str(game.winner()))
+    return game.winner(), im
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-f",
+        "--framerate",
+        type=int,
+        help="Game framerate (directly affects game speed)",
+        default=10,
+    )
+    parser.add_argument(
+        "-d",
+        "--dummy",
+        help="Use dummy video device (use when no video device is available)",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-s",
+        "--screenshot",
+        help="Saves final frame screenshot with timestamp",
+        action="store_true",
+    )
+    args = parser.parse_args()
+    if args.dummy:
+        os.environ["SDL_VIDEODRIVER"] = "dummy"
+    if args.screenshot:
+        os.environ["SDL_VIDEODRIVER"] = "dummy"
     while True:
-        random_game()
+        winner, screenshot = run_random_game(args.framerate)
+        print("Winner: " + str(winner))
+        if args.screenshot:
+            ImageOps.mirror(screenshot).save(
+                "screenshot_" + str(datetime.now()) + ".png"
+            )
