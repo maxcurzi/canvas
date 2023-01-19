@@ -56,7 +56,6 @@ class Game:
         self.all_sprites.add(self.human)
 
         self.pixel_inputs = pygame.sprite.Group()
-        # self.owners_map = {}
 
         if use_defaults:
             self.defaults()
@@ -68,6 +67,7 @@ class Game:
         click_sprite = Game.UserInput(x, y, owner)
         self.pixel_inputs.add(click_sprite)
 
+    @property
     def owners_map(self):
         """Each pixel can have an owner, for example when a player clicks on the
         spaceship to shoot a rocket, the pixels composing the rocket will
@@ -78,6 +78,10 @@ class Game:
             for dx, dy in product(range(w), range(h)):
                 om[(x + dx, y + dy)] = entity.owner
         return om
+
+    @property
+    def frame(self):
+        return Image.fromarray(pygame.surfarray.array3d(self.screen)).rotate(-90)
 
     def defaults(self):
         alien_locations = [
@@ -150,7 +154,14 @@ class Game:
             self.human.enqueue_rocket(user_input.owner)
             self.pixel_inputs.remove(user_input)
 
-        # Place a shield
+        # Check if user clicked on Shield, ignore it. But if not, place shield
+        for user_input in self.pixel_inputs:
+            shield_clicked_by = pygame.sprite.spritecollide(
+                user_input, self.shields, dokill=False
+            )
+            if len(shield_clicked_by) > 0:
+                self.pixel_inputs.remove(user_input)
+
         for user_input in self.pixel_inputs:
             print(f"Placed a Shield {user_input.rect.x},{user_input.rect.y}")
             shield = Game.Shield(
@@ -229,7 +240,6 @@ class Game:
         self.draw()
         pygame.display.flip()
         self.clock.tick(self.framerate)
-        return Image.fromarray(pygame.surfarray.array3d(self.screen)).rotate(-90)
 
     class MeterBar:
         THICKNESS = 1
@@ -437,16 +447,16 @@ def run_random_game(framerate):
     """
     game = Game(framerate=framerate, use_defaults=True)
     t = 0
-    im = game.update()
+    game.update()
     while game.winner() == None:
-        print(game.owners_map())
+        print(game.owners_map)
         t += 1
         if t % random.randint(5, 8) == 0:
             game.click_at(
                 random.randint(0, 63), random.randint(0, 63), "Random" + str(t)
             )
-        im = game.update()
-    return game.winner(), im
+        game.update()
+    return game.winner(), game.frame
 
 
 if __name__ == "__main__":
@@ -456,7 +466,7 @@ if __name__ == "__main__":
         "--framerate",
         type=int,
         help="Game framerate (directly affects game speed)",
-        default=10,
+        default=60,
     )
     parser.add_argument(
         "-d",
@@ -473,12 +483,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.dummy:
         os.environ["SDL_VIDEODRIVER"] = "dummy"
-    if args.screenshot:
-        os.environ["SDL_VIDEODRIVER"] = "dummy"
     while True:
         winner, screenshot = run_random_game(args.framerate)
         print("Winner: " + str(winner))
         if args.screenshot:
+            try:
+                os.mkdir("screenshots")
+            except FileExistsError:
+                pass
             ImageOps.mirror(screenshot).save(
-                "screenshot_" + str(datetime.now()) + ".png"
+                "screenshots/" + str(datetime.now().strftime("%Y%m%d_%H%M%S")) + ".png"
             )
