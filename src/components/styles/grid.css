@@ -17,6 +17,12 @@
     border: 0;
 }
 
+.tooltip-title {
+    background-color: red;
+    color: white;
+}
+
+
 .box.color0 {
     background-color: #000000;
 }
