@@ -28,7 +28,7 @@ class Team(Enum):
 class Colors(Enum):
     COLOR_KEY = (0, 0, 0)  # Transparency color key
     BLACK = (0, 0, 0)
-    HUMAN = (0, 255, 200)
+    HUMAN = (0, 255, 0)
     ALIEN = (255, 255, 255)
     SHIELD = (255, 255, 0)
     ENEMY_ROCKET = (255, 0, 0)
@@ -38,7 +38,11 @@ class Colors(Enum):
 
 class Game:
     def __init__(
-        self, width: int = 64, height: int = 64, framerate: int = 60, use_defaults=True
+        self,
+        width: int = 64,
+        height: int = 64,
+        framerate: float = 60,
+        use_defaults=True,
     ) -> None:
         pygame.init()
 
@@ -77,7 +81,7 @@ class Game:
         for entity in [*self.human_rockets, *self.enemies_rockets, *self.shields]:
             x, y, w, h = entity.rect
             for dx, dy in product(range(w), range(h)):
-                om[(x + dx, y + dy)] = entity.owner
+                om[(y + dy, x + dx)] = entity.owner
         return om
 
     @property
@@ -479,7 +483,6 @@ def run_random_game(framerate):
     t = 0
     game.update()
     while game.winner() == None:
-        print(game.owners_map)
         t += 1
         if t % random.randint(5, 8) == 0:
             game.click_at(
