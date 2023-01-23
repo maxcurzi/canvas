@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """ Simple space invaders clone, to be used as a backend game for Canvas.
-TODO: Remove hardcoded values
-TODO: Output color/color palette along the image, to reproduce within Canvas.
+TODO: Consider config file
 """
 import pygame
 from enum import Enum, auto
@@ -63,7 +62,18 @@ class Game:
         self.pixel_inputs = pygame.sprite.Group()
 
         if use_defaults:
-            self.defaults()
+            self._defaults()
+
+    def update(self):
+        """Main game update step, it should be called in a loop to progress the
+        game at the game's framerate."""
+        self._handle_pixel_inputs()
+        self.all_sprites.update()
+        self._handle_collisions()
+        self._shoot_rockets()
+        self._draw()
+        pygame.display.flip()
+        self.clock.tick(self.framerate)
 
     def click_at(self, x, y, owner=None):
         """User inputs are clicks to the grid pixels, we add these inputs to a
@@ -90,7 +100,7 @@ class Game:
             -90
         )
 
-    def defaults(self):
+    def _defaults(self):
         alien_locations = [
             (1, 2),
             (13, 2),
@@ -107,15 +117,15 @@ class Game:
             self.aliens.add(alien)
             self.all_sprites.add(alien)
 
-    def winner(self):
+    def _winner(self):
         if len(self.aliens) == 0:
             return Team.HUMANS
         if self.human.health <= 0:
             return Team.ALIENS
         return None
 
-    def draw(self):
-        # Draw all sprites
+    def _draw(self):
+        """Draw all sprites"""
         self.screen.fill(Colors.BLACK.value)
         self._purge_sprites_off_screen()
         for entity in self.all_sprites:
@@ -132,6 +142,8 @@ class Game:
             self.screen.blit(entity.surf, entity.rect)
 
     def _purge_sprites_off_screen(self):
+        """Off-screen elements still live in the game, but are not needed anymore.
+        We just remove them"""
         for entity in [*self.human_rockets, *self.enemies_rockets, *self.shields]:
             x, y, w, h = entity.rect
             if not (0 <= x < self.resolution[0] and 0 <= y < self.resolution[1]):
@@ -141,6 +153,9 @@ class Game:
                 self.shields.remove(entity)
 
     def _handle_pixel_inputs(self):
+        """User inputs are invisible pixels drawn in the game. Collision on
+        these elements result in them disappear. The pixel inputs live for only
+        one time step even if they had no effect"""
         # Check if user clicked on Alien
         for user_input in self.pixel_inputs:
             alien_clicked = pygame.sprite.spritecollide(
@@ -149,9 +164,6 @@ class Game:
             if len(alien_clicked) > 0:
                 alien_clicked[0].enqueue_rocket(user_input.owner)
                 self.pixel_inputs.remove(user_input)
-                print(
-                    f"{user_input.owner} Clicked on Alien {user_input.rect.x},{user_input.rect.y}"
-                )
 
         # Check if user clicked on Human
         human_clicked_by = pygame.sprite.spritecollide(
@@ -159,9 +171,6 @@ class Game:
         )
 
         for user_input in human_clicked_by:
-            print(
-                f"{user_input.owner} Clicked on Human {user_input.rect.x},{user_input.rect.y}"
-            )
             self.human.enqueue_rocket(user_input.owner)
             self.pixel_inputs.remove(user_input)
 
@@ -174,9 +183,6 @@ class Game:
                 self.pixel_inputs.remove(user_input)
 
         for user_input in self.pixel_inputs:
-            print(
-                f"{user_input.owner} Placed a Shield {user_input.rect.x},{user_input.rect.y}"
-            )
             shield = Game.Shield(
                 user_input.rect.x, user_input.rect.y, owner=user_input.owner
             )
@@ -185,6 +191,7 @@ class Game:
         self.pixel_inputs = pygame.sprite.Group()
 
     def _handle_collisions(self):
+        """Updates entities health and removes sprites when relevant (i.e. colliding rockets)"""
         # Elide rockets hitting each other
         for rocket in self.enemies_rockets:
             collided = pygame.sprite.spritecollide(
@@ -194,7 +201,6 @@ class Game:
                 rocket.health -= 1
             for c in collided:
                 c.health -= 1
-
         for rocket in self.human_rockets:
             collided = pygame.sprite.spritecollide(
                 rocket, self.enemies_rockets, dokill=False
@@ -204,16 +210,21 @@ class Game:
             for c in collided:
                 c.health -= 1
 
+        # Alien vs rockets
         for alien in self.aliens:
             if (
                 len(pygame.sprite.spritecollide(alien, self.human_rockets, dokill=True))
                 > 0
             ):
                 alien.health -= 2
+
+        # Alien vs shields
         for alien in self.aliens:
             collided = pygame.sprite.spritecollide(alien, self.shields, dokill=True)
             if len(collided) > 0:
                 alien.health -= 0
+
+        # Shields vs rockets
         for shield in self.shields:
             if (
                 len(
@@ -229,6 +240,8 @@ class Game:
                 > 0
             ):
                 shield.health -= 1
+
+        # Enemy rockets vs human
         if (
             len(
                 pygame.sprite.spritecollide(
@@ -238,10 +251,14 @@ class Game:
             > 0
         ):
             self.human.health -= 1
+
+        # Aliens vs human
         if len(pygame.sprite.spritecollide(self.human, self.aliens, dokill=True)) > 0:
             self.human.health = 0
 
     def _shoot_rockets(self):
+        """Rockets on each alien and playeyr are popped from their rocket queue
+        (depending on their shoot rate) and a new sprite/rocket element is created"""
         if self.human.t % self.human.shoot_dt == 0 and len(self.human.rocket_queue) > 0:
             owner = self.human.rocket_queue.popleft()
             rocket = Game.Rocket(
@@ -264,16 +281,9 @@ class Game:
                 self.enemies_rockets.add(rocket)
                 self.all_sprites.add(rocket)
 
-    def update(self):
-        self._handle_pixel_inputs()
-        self.all_sprites.update()
-        self._handle_collisions()
-        self._shoot_rockets()
-        self.draw()
-        pygame.display.flip()
-        self.clock.tick(self.framerate)
-
     class MeterBar:
+        """Simple meter bar to keep track of life, rockets, etc."""
+
         THICKNESS = 1
 
         def __init__(self, len) -> None:
@@ -324,8 +334,7 @@ class Game:
 
     class Alien(pygame.sprite.Sprite):
         """Space invader alien. It can shoot rockets and has a healthbar
-        indicator and a rocket indicator.
-        """
+        indicator and a rocket indicator."""
 
         def __init__(self, x0, y0, owner=None):
             pygame.sprite.Sprite.__init__(self)
@@ -381,6 +390,9 @@ class Game:
             self.rocket_queue.append(owner)
 
     class Human(pygame.sprite.Sprite):
+        """Player ship. It can shoot rockets and has a healthbar
+        indicator and a rocket indicator."""
+
         def __init__(self, x0, y0, owner=None):
             pygame.sprite.Sprite.__init__(self)
             self.surf = pygame.image.load("human.png").convert()
@@ -428,6 +440,8 @@ class Game:
                     self.dx = -self.dx
 
     class Shield(pygame.sprite.Sprite):
+        """Shield to stop incoming rockets. It's a simple rectangle."""
+
         SHAPE = [3, 2]
 
         def __init__(self, x0, y0, owner=None):
@@ -449,6 +463,8 @@ class Game:
                 self.kill()
 
     class Rocket(pygame.sprite.Sprite):
+        """Projectile shot by either alien or human. Moves vertically."""
+
         SHAPE = [1, 2]
 
         def __init__(self, x0, y0, owner=None, friendly=True):
@@ -482,17 +498,32 @@ def run_random_game(framerate):
     game = Game(framerate=framerate, use_defaults=True)
     t = 0
     game.update()
-    while game.winner() == None:
+    while game._winner() == None:
         t += 1
         if t % random.randint(5, 8) == 0:
             game.click_at(
                 random.randint(0, 63), random.randint(0, 63), "Random" + str(t)
             )
         game.update()
-    return game.winner(), game.frame
+    return game._winner(), game.frame
 
 
-if __name__ == "__main__":
+def main(args):
+    if args.dummy:
+        os.environ["SDL_VIDEODRIVER"] = "dummy"
+    while True:
+        _winner, screenshot = run_random_game(args.framerate)
+        if args.screenshot:
+            try:
+                os.mkdir("screenshots")
+            except FileExistsError:
+                pass
+            ImageOps.mirror(screenshot).save(
+                "screenshots/" + str(datetime.now().strftime("%Y%m%d_%H%M%S")) + ".png"
+            )
+
+
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-f",
@@ -514,16 +545,9 @@ if __name__ == "__main__":
         action="store_true",
     )
     args = parser.parse_args()
-    if args.dummy:
-        os.environ["SDL_VIDEODRIVER"] = "dummy"
-    while True:
-        winner, screenshot = run_random_game(args.framerate)
-        print("Winner: " + str(winner))
-        if args.screenshot:
-            try:
-                os.mkdir("screenshots")
-            except FileExistsError:
-                pass
-            ImageOps.mirror(screenshot).save(
-                "screenshots/" + str(datetime.now().strftime("%Y%m%d_%H%M%S")) + ".png"
-            )
+    return args
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    main(args)

@@ -54,9 +54,9 @@ def test_event_sprites(default_setup):
 
 def test_no_win(default_setup):
     game: Game = default_setup
-    assert game.winner() == None
+    assert game._winner() == None
     game.update()
-    assert game.winner() == None
+    assert game._winner() == None
 
 
 def test_humans_win(default_setup):
@@ -64,14 +64,14 @@ def test_humans_win(default_setup):
     for alien in game.aliens:
         alien.health = 0
     game.update()
-    assert game.winner() == Team.HUMANS
+    assert game._winner() == Team.HUMANS
 
 
 def test_aliens_win(default_setup):
     game: Game = default_setup
     game.human.health = 0
     game.update()
-    assert game.winner() == Team.ALIENS
+    assert game._winner() == Team.ALIENS
 
 
 def test_rocket_hits_alien(one_alien_above_human):
