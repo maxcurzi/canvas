@@ -1,7 +1,7 @@
 import asyncio
 
-from game_player import play_invaders
 from server import DbManager
+from game_player import play_invaders
 
 
 async def main():

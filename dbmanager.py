@@ -3,10 +3,11 @@ from pathlib import Path
 from utils import TimedCall
 import time
 
+import os
+
+print(os.getcwd())
 cred = credentials.Certificate(
     Path(
-        # "backend",
-        # "firebase",
         "secret",
         "canvas-f06e2-firebase-adminsdk-fakna-1688133a0f.json",
     )
