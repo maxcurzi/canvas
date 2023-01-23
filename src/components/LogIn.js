@@ -2,9 +2,9 @@ import React, {useEffect, useState} from 'react';
 import * as firebaseui from 'firebaseui';
 import 'firebaseui/dist/firebaseui.css';
 import {
-  getAuth,
+  // getAuth,
   EmailAuthProvider,
-  GoogleAuthProvider,
+  // GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
   sendEmailVerification,
@@ -36,6 +36,7 @@ const LogIn = (props) => {
     signInOptions: [
       // Email / Password Provider.
       EmailAuthProvider.PROVIDER_ID,
+      // GoogleAuthProvider.PROVIDER_ID,
     ],
     callbacks: {
       signInSuccessWithAuthResult: function (authResult, redirectUrl) {
@@ -52,7 +53,7 @@ const LogIn = (props) => {
 
   return (
     <div>
-      {user ? <button onClick={() => signOut(props.auth)}>Logout</button> : <section className='authbox left-aligned' id={'firebaseui-auth-container'}></section>}
+      {user ? <button onClick={() => signOut(props.auth)}>LogOut</button> : <section className='authbox left-aligned' id={'firebaseui-auth-container'}></section>}
       {userVerified ? <h3></h3> : <h3 className='authbox left-aligned'>Verify your email and refresh this page to be able to play.</h3>}
     </div>
   )
