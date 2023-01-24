@@ -6,15 +6,17 @@
     min-width: 1px;
 }
 
+.box.hovered {
+    background-color: grey;
+}
+
 .box {
     width: 6px;
     height: 6px;
     /* margin: 1px; */
-    border: #ff0000;
     padding: 0;
     margin: 0;
     padding: 0;
-    border: 0;
 }
 
 .tooltip-title {

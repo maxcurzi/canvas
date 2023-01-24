@@ -2,9 +2,6 @@ import './styles/grid.css';
 import { firebaseApp, resetGrid } from '../Firebase';
 import { getDatabase, ref, onValue ,get, child} from 'firebase/database';
 import React from 'react';
-import { Tooltip } from 'react-tooltip';
-import 'react-tooltip/dist/react-tooltip.css';
-import ReactTooltip from "react-tooltip";
 
 // async function handleClick(x, y) {
 //   const username = "your_username"; //  get it from your authentication context
@@ -62,27 +59,6 @@ class Grid extends React.Component{
     // console.log(this.state)
   }
 
-  // handleClick_direct_to_server(event, index) {
-  //   if (this.props.isAuthenticated()) {
-  //     // process the click event and update Firebase database
-  //     const db = getDatabase(firebaseApp);
-  //     // pixels['/pixels/' + index] = (this.state.pixelArray[index]+1)%8;
-  //     // update(dbRef, pixels);
-  //     const postListRef = ref(db, 'requests');
-  //     const newPostRef = push(postListRef);
-  //     set(newPostRef, {
-  //       userId: this.props.user.uid,
-  //       userDisplayName: this.props.user.displayName,
-  //       timestamp: Date.now(),
-  //       pixelReq: index,
-  //     });
-
-
-  //   } else {
-  //       // console.log("User is not authenticated.");
-  //   }
-  // }
-
   componentDidMount() {
     const db = getDatabase(firebaseApp);
     const dbRef_pixels = ref(db, 'pixels');
@@ -99,9 +75,6 @@ class Grid extends React.Component{
         // console.log(key)
         newOwnersArr[key] = value;
       });
-      // console.log(newOwnersArr);
-      // // console.log(returnedTarget)
-      // this.setState({...this.state, owners: newOwnersArr})
       this.state.owners = newOwnersArr
     });
   }
@@ -131,8 +104,6 @@ class Grid extends React.Component{
               }
             }}
               key={index}
-              // onMouseOver={this.handleMouseIn.bind(this)}
-              // onMouseOut={this.handleMouseOut.bind(this)}
           />
         })}
       </div>

@@ -5,6 +5,13 @@
   margin: 10px;
 }
 
+.AppWs {
+  text-align: center;
+  width: 10px;
+  /* height: 100px; */
+  margin: 10px;
+}
+
 .authbox {
   width: 400px;
   justify-content: left;
