@@ -10,15 +10,14 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getPerformance } from "firebase/performance";
 
 import useWebSocket from 'react-use-websocket';
-const WS_URL = 'ws://127.0.0.1:8777';
+const WS_URL = 'wss://pixels.today:8765';
 
 const gridSize = 64;
 function AppWs() {
   const [grid, setGrid] = useState(JSON.stringify(Array(gridSize * gridSize).fill(0)));
   const [owners, setOwners] = useState(JSON.stringify(Array(gridSize * gridSize).fill("")));
-  const { sendMessage, readyState } = useWebSocket(WS_URL, {
+  const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(WS_URL, {
     onOpen: () => {
-      console.log("A")
       console.log('WebSocket connection established!');
     },
     onMessage: e => {
@@ -36,8 +35,8 @@ function AppWs() {
   }
 
   const auth = getAuth(firebaseApp);
-  const perf = getPerformance(firebaseApp);
-
+  getPerformance(firebaseApp);
+  const webSocket = getWebSocket()
   onAuthStateChanged(auth, (user) => {
     if ((user) && (user.emailVerified)) {
       setUser(user)
@@ -47,13 +46,11 @@ function AppWs() {
   });
 
   return (
+    <div className="AppWs">
+      <GridWs isAuthenticated={isAuthenticated} gridSize={gridSize} user={user} gridData={grid} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState} />
+        {user && user.uid === "UNWpWi32gPXW35xGEM08l2Tli9i2" ? <button onClick={function () { if (user !== null) { resetGrid(gridSize) } }}>Reset</button> : null}
         <LogIn auth={auth} />
-    // <div className="AppWs">
-    //   <GridWs isAuthenticated={isAuthenticated} gridSize={gridSize} user={user} gridData={grid} owners={owners} sendMessage={sendMessage} readyState={readyState} />
-    //   {/* <div className="float-container"> */}
-    //     {user && user.uid === "UNWpWi32gPXW35xGEM08l2Tli9i2" ? <button onClick={function () { if (user !== null) { resetGrid(gridSize) } }}>Reset</button> : null}
-    //     {/* </div> */}
-    // </div>
+    </div>
   );
 }
 

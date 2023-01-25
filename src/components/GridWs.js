@@ -11,7 +11,8 @@ const GridWs = (props) =>{
   const [selected, setSelected] = useState(Array(props.gridSize * props.gridSize).fill(false))
   const handleClick = async (x_value, y_value, user_value) => {
     if (props.readyState === 1) {
-      props.sendMessage(JSON.stringify({x:x_value, y:y_value, user:user_value}))
+      // props.sendMessage(JSON.stringify({x:x_value, y:y_value, user:user_value}))
+      props.webSocket.send(JSON.stringify({x:x_value, y:y_value, user:user_value}))
     }
   }
   useEffect(() => {
