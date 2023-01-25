@@ -20,8 +20,7 @@ class CanvasInvaders(SpaceInvaders, CanvasApp):
     pass
 
 
-async def play_invaders(dbm: DbManager):
-    fps = 0.5
+async def play_invaders(dbm: DbManager, fps: float = 1):
     video_updater = TimedCall(func=dbm.update, interval=1 / fps)
     while True:
         game = CanvasInvaders(framerate=fps)
