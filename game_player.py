@@ -8,6 +8,7 @@ from invaders.invaders import Game as SpaceInvaders
 from games.interface import CanvasApp
 from server import DbManager
 from utils import TimedCall
+import random
 
 context = zmq.asyncio.Context()
 socket = context.socket(zmq.PULL)
@@ -20,7 +21,7 @@ class CanvasInvaders(SpaceInvaders, CanvasApp):
     pass
 
 
-async def play_invaders(dbm: DbManager, fps: float = 1):
+async def play_invaders(dbm: DbManager, fps: float = 1, random_game: bool = True):
     video_updater = TimedCall(func=dbm.update, interval=1 / fps)
     while True:
         game = CanvasInvaders(framerate=fps)
@@ -32,7 +33,19 @@ async def play_invaders(dbm: DbManager, fps: float = 1):
             for j, v in enumerate(frame.flatten()):
                 frames_dict[j] = v
             t += 1
+            if random_game:
+                if t % 3 == 0:
+                    x = random.randint(0, 63)
+                    y = random.randint(min(t // 15 + 5, 35), 35)
+                    user = "cpu"
+                    game.click_at(x, y, user)
 
+                if t % random.randint(3, 12) == 0:
+                    x = game.human.rect.centerx
+                    y = game.human.rect.centery
+                    game.click_at(x, y, user)
+
+            # game.click_at(random.randint(0, 63), random.randint(0, 63), "CPU")
             # Get click events
             # check if there are any messages in the socket
             socks = dict(poller.poll(100))
@@ -51,6 +64,7 @@ async def play_invaders(dbm: DbManager, fps: float = 1):
                             break
                             # if e.errno == zmq.EAGAIN:
                             # no more messages to read
+
             # serve_clicks(dbm=dbm, game=game)
             owners_dict = game.owners_map
             video_updater.update(frames_dict, owners_dict)

@@ -8,7 +8,7 @@ async def main():
     dbm = DbManager(
         url="https://canvas-f06e2-default-rtdb.europe-west1.firebasedatabase.app"
     )
-    await play_invaders(dbm, fps=0.2)
+    await play_invaders(dbm, fps=60)
 
 
 if __name__ == "__main__":
