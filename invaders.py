@@ -91,7 +91,11 @@ class Game:
         for entity in [*self.human_rockets, *self.enemies_rockets, *self.shields]:
             x, y, w, h = entity.rect
             for dx, dy in product(range(w), range(h)):
-                om[(y + dy, x + dx)] = entity.owner
+                if (
+                    y + dy < self.screen.get_width()
+                    and x + dx < self.screen.get_height()
+                ):
+                    om[(y + dy, x + dx)] = entity.owner
         return om
 
     @property
@@ -223,6 +227,9 @@ class Game:
             collided = pygame.sprite.spritecollide(alien, self.shields, dokill=True)
             if len(collided) > 0:
                 alien.health -= 0
+
+        # Muman vs shields
+        collided = pygame.sprite.spritecollide(self.human, self.shields, dokill=True)
 
         # Shields vs rockets
         for shield in self.shields:
