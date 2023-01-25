@@ -1,16 +1,8 @@
 from firebase_admin import credentials, db, initialize_app
-from pathlib import Path
 from utils import TimedCall
 import time
-
 import os
 
-# cred = credentials.Certificate(
-#     Path(
-#         "secret",
-#         "canvas-f06e2-firebase-adminsdk-fakna-1688133a0f.json",
-#     )
-# )
 initialize_app(
     credential=credentials.Certificate(
         {
