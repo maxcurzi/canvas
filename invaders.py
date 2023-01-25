@@ -12,10 +12,10 @@ import os
 import argparse
 from datetime import datetime
 import numpy as np
-from importlib.resources import path
+from pkg_resources import resource_filename
 
-alien_path = path("invaders", "alien.png")
-human_path = path("invaders", "human.png")
+alien_path = resource_filename(__name__, "alien.png")
+human_path = resource_filename(__name__, "human.png")
 
 
 class Team(Enum):
