@@ -1,3 +1,7 @@
+import subprocess
+
+subprocess.Popen(["python", "player.py"])
+
 from fastapi import FastAPI, HTTPException, Body, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 import zmq
@@ -26,6 +30,7 @@ async def update_pixel(
     x = request["x"]
     y = request["y"]
     user = request["user"]
+    print(f"Click received: {x},{y} from {user}")
     if x is None or y is None or user is None:
         raise HTTPException(status_code=400, detail="missing arguments")
     # process the request
