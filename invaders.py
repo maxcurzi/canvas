@@ -12,11 +12,10 @@ import os
 import argparse
 from datetime import datetime
 import numpy as np
-from pathlib import Path
+from pkg_resources import resource_filename
 
-abspath = os.path.abspath(__file__)
-dname = os.path.dirname(abspath)
-# os.chdir(dname)
+alien_path = resource_filename(__name__, "alien.png")
+human_path = resource_filename(__name__, "human.png")
 
 
 class Team(Enum):
@@ -346,7 +345,7 @@ class Game:
 
         def __init__(self, x0, y0, owner=None):
             pygame.sprite.Sprite.__init__(self)
-            self.surf = pygame.image.load(Path(dname, "alien.png")).convert()
+            self.surf = pygame.image.load(alien_path).convert()
             self.surf.set_colorkey(Colors.COLOR_KEY.value)
             self.rect = self.surf.get_rect()
             self.x0 = x0
@@ -403,7 +402,7 @@ class Game:
 
         def __init__(self, x0, y0, owner=None):
             pygame.sprite.Sprite.__init__(self)
-            self.surf = pygame.image.load(Path(dname, "human.png")).convert()
+            self.surf = pygame.image.load(human_path).convert()
             self.surf.set_colorkey(Colors.COLOR_KEY.value)
             self.surf.fill(Colors.HUMAN.value, special_flags=pygame.BLEND_MULT)
 

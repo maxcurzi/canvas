@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 setup(
     name="canvas-invaders",
@@ -9,4 +8,7 @@ setup(
     author="Max Curzi",
     author_email="massimiliano.curzi@gmail.com",
     url="https://github.com/maxcurzi/canvas-game-invaders",
+    include_package_data=True,
+    package_data={"": ["*.png"]},
+    install_requires=[],
 )
