@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="canvas-invaders",
+    name="invaders",
     version="0.0.1",
     description="Space Invaders Clone for Canvas",
     author="Max Curzi",
