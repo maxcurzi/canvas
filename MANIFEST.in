@@ -1,0 +1,4 @@
+include assets/*.png
+include invaders/assets/*.png
+recursive-include assets
+include README.md

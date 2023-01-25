@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name="invaders",
-    version="0.0.1",
+    version="0.0.4",
     description="Space Invaders Clone for Canvas",
     author="Max Curzi",
     author_email="massimiliano.curzi@gmail.com",
     url="https://github.com/maxcurzi/canvas-game-invaders",
+    # package_data={"invaders": ["*.png", "assets/*.png", "**/*.png"]},
     include_package_data=True,
-    package_data={"invaders": ["assets/*.png"]},
     install_requires=[],
-    packages=["invaders"],
+    packages=find_packages(exclude=["ez_setup", "tests", "tests.*"]),
 )
