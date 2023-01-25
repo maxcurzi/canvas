@@ -3,7 +3,7 @@ Any game could be a Canvas game as long as it implements this interface.
 Example use in the Canvas backend:
 
 from apps.interface import CanvasApp
-from invaders import Game as SpaceInvaders
+from invaders.invaders import Game as SpaceInvaders
 
 class CanvasInvaders(SpaceInvaders, CanvasApp):
     pass

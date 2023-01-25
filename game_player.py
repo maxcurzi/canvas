@@ -3,7 +3,7 @@ import time
 import numpy as np
 import zmq
 import zmq.asyncio
-from invaders import Game as SpaceInvaders
+from invaders.invaders import Game as SpaceInvaders
 
 from games.interface import CanvasApp
 from server import DbManager

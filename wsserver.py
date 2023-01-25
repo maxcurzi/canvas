@@ -2,7 +2,7 @@ import asyncio
 import json
 import websockets
 import numpy as np
-from invaders import Game as SpaceInvaders
+from invaders.invaders import Game as SpaceInvaders
 from games.interface import CanvasApp
 import pathlib
 import ssl
