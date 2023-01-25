@@ -9,4 +9,7 @@ setup(
     author="Max Curzi",
     author_email="massimiliano.curzi@gmail.com",
     url="https://github.com/maxcurzi/canvas-game-invaders",
+    package_data={
+    '': ['*.png'],
+}
 )
