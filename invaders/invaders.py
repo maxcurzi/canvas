@@ -15,7 +15,7 @@ import numpy as np
 
 from pathlib import Path
 
-base_path = Path(__file__).parent
+base_path = Path(__file__)
 human_path = base_path / "assets" / "human.png"
 alien_path = base_path / "assets" / "alien.png"
 
