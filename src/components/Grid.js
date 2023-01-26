@@ -46,7 +46,8 @@ class Grid extends React.Component{
     let data = {x: x_value, y: y_value, user: user_value};
     let jsoninfo = JSON.stringify(data);
     // const response = await fetch('http://127.0.0.1:8080/update_pixel/', {
-    const response = await fetch('https://canvas-backend-j4zsynltia-ew.a.run.app:8080/update_pixel/', {
+    // const response = await fetch('https://canvas-backend-j4zsynltia-ew.a.run.app:8080/update_pixel/', {
+    const response = await fetch('https://10.132.0.2:8080/update_pixel/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: jsoninfo
