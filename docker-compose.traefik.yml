@@ -1,0 +1,29 @@
+services:
+
+  traefik:
+    image: traefik:v2.3
+    ports:
+      # Listen on port 80, default for HTTP
+      - 80:80
+    restart: always
+    volumes:
+      # Add Docker as a mounted volume, so that Traefik
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      # Enable Docker in Traefik
+      - --providers.docker
+      # Do not expose all Docker services
+      - --providers.docker.exposedbydefault=false
+      # Create an entrypoint "http" listening on port 80
+      - --entrypoints.http.address=:80
+      # Enable the access log, with HTTP requests
+      - --accesslog
+      # Enable the Traefik log
+      - --log
+    networks:
+      # Use the public network created to be shared
+      - traefik-public
+
+networks:
+  traefik-public:
+    external: true
