@@ -5,10 +5,13 @@ services:
     ports:
       # Listen on port 80, default for HTTP
       - 80:80
+      # Listen on port 80, default for HTTPS
+      - 443:443
     restart: always
     volumes:
       # Add Docker as a mounted volume, so that Traefik
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-public-certificates:/certificates
     command:
       # Enable Docker in Traefik
       - --providers.docker
@@ -16,6 +19,10 @@ services:
       - --providers.docker.exposedbydefault=false
       # Create an entrypoint "http" listening on port 80
       - --entrypoints.http.address=:80
+      - --entrypoints.http.address=:443
+      - --certificateresolvers.le.acme.email=massimiliano.curzi@gmail.com
+      - --certificateresolvers.le.acme.storage=/certificates/acme.json
+      - --certificateresolvers.le.acme.tlschallenge=true
       # Enable the access log, with HTTP requests
       - --accesslog
       # Enable the Traefik log
@@ -23,6 +30,10 @@ services:
     networks:
       # Use the public network created to be shared
       - traefik-public
+
+volumes:
+  traefik-public-certificates:
+
 
 networks:
   traefik-public:

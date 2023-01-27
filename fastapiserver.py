@@ -1,6 +1,6 @@
-import subprocess
+# import subprocess
 
-subprocess.Popen(["python", "player.py"])
+# subprocess.Popen(["python", "player.py"])
 
 from fastapi import FastAPI, HTTPException, Body, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,7 +12,7 @@ socket = context.socket(zmq.PUSH)
 socket.connect("tcp://127.0.0.1:5555")
 
 app = FastAPI()
-origins = ["*"]
+origins = ["https://maxcurzi.github.io/canvas/", "https://pixels.today"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -41,4 +41,28 @@ async def update_pixel(
 
 @app.options("/update_pixel/")
 async def cors_options(request: Request):
-    return Response(content={}, headers={"Access-Control-Allow-Origin": "*"})
+    return Response(
+        content={},
+        headers={"Access-Control-Allow-Origin": "https://maxcurzi.github.io/canvas/"},
+    )
+
+
+from pydantic import BaseModel
+
+
+class Message(BaseModel):
+    text = "Hello FastAPI"
+    author = "John Does"
+
+
+@app.get("/")
+def hello():
+    return {"message": "Hello FastAPI + SSL"}
+
+
+@app.post("/")
+def send_message(message: Message):
+    text = message.text
+    author = message.author
+    response = {"status": "message received", "text": text, "author": author}
+    return response
