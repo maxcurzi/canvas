@@ -10,7 +10,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getPerformance } from "firebase/performance";
 
 import useWebSocket from 'react-use-websocket';
-const WS_URL = 'wss://pixels.today:8765';
+const WS_URL = 'ws://canvas.maxcurzi.com:8766';
 
 const gridSize = 64;
 function AppWs() {

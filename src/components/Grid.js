@@ -49,7 +49,7 @@ class Grid extends React.Component{
     // const response = await fetch('https://canvas-backend-j4zsynltia-ew.a.run.app:8080/update_pixel/', {
     const response = await fetch('https://35.195.84.144:8080/update_pixel/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
         body: jsoninfo
     });
     const json = await response.json();
