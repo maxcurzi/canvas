@@ -10,7 +10,6 @@ import zmq.asyncio
 context = zmq.asyncio.Context()
 socket = context.socket(zmq.PUSH)
 socket.connect("tcp://127.0.0.1:5555")
-
 app = FastAPI()
 origins = ["https://maxcurzi.github.io/canvas/", "https://pixels.today"]
 

@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from server import DbManager
+from old.server import DbManager
 from utils import TimedCall
 
 

@@ -6,7 +6,7 @@ import zmq.asyncio
 from invaders.invaders import Game as SpaceInvaders
 
 from games.interface import CanvasApp
-from server import DbManager
+from old.server import DbManager
 from utils import TimedCall
 import random
 

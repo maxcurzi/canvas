@@ -1,0 +1,32 @@
+services:
+  wsserver:
+    build: .
+    command: python wsserver.py
+    ports:
+      - "8766:8766"
+    environment:
+      - SDL_VIDEODRIVER=dummy
+    restart: on-failure
+  # invaders:
+  #   build: .
+  #   command: python player.py
+  #   # restart: on-failure
+  #   environment:
+  #     - FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID
+  #     - FIREBASE_PRIVATE_KEY_ID=$FIREBASE_PRIVATE_KEY_ID
+  #     - FIREBASE_PRIVATE_KEY=$FIREBASE_PRIVATE_KEY
+  #     - FIREBASE_CLIENT_EMAIL=$FIREBASE_CLIENT_EMAIL
+  #     - FIREBASE_CLIENT_ID=$FIREBASE_CLIENT_ID
+  #     - FIREBASE_AUTH_URI=$FIREBASE_AUTH_URI
+  #     - FIREBASE_TOKEN_URI=$FIREBASE_TOKEN_URI
+  #     - FIREBASE_AUTH_PROVIDER_X509_CERT_URL=$FIREBASE_AUTH_PROVIDER_X509_CERT_URL
+  #     - FIREBASE_CLIENT_X509_CERT_URL=$FIREBASE_CLIENT_X509_CERT_URL
+  #     - SDL_VIDEODRIVER=dummy
+  # fastapi:
+  #   build: .
+  #   command: uvicorn fastapiserver:app --host 0.0.0.0 --port 5001
+  #   ports:
+  #     - "8000:5001"
+  #   # restart: on-failure
+  #   depends_on:
+  #     - invaders

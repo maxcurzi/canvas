@@ -2,7 +2,7 @@ import numpy as np
 from PIL import Image
 from pyboy import PyBoy
 
-from dbmanager import DbManager
+from old.dbmanager import DbManager
 from utils import TimedCall
 
 

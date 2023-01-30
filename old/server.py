@@ -1,4 +1,4 @@
-from dbmanager import DbManager
+from old.dbmanager import DbManager
 
 if __name__ == "__main__":
 

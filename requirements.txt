@@ -1,7 +1,8 @@
 Pillow==9.4
 numpy==1.24
-fastapi==0.88
-pyzmq==25.0.0
-uvicorn==0.20.0
-firebase-admin==6.0.1
+websockets==10.4
 git+https://github.com/maxcurzi/canvas-game-invaders@main
+# fastapi==0.88
+# pyzmq==25.0.0
+# uvicorn==0.20.0
+# firebase-admin==6.0.1
