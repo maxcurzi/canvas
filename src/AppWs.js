@@ -3,7 +3,7 @@ import GridWs from './components/GridWs';
 import './websafe_colors.css'
 import { firebaseApp, resetGrid } from './Firebase';
 import React, { useState } from 'react';
-
+import Image from './components/GridWs2';
 import LogIn from './components/LogIn';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
@@ -27,8 +27,6 @@ function AppWs() {
     },
     shouldReconnect: (_closeEvent) => true,
   });
-  // const sendMessage = null
-  // const readyState = null
   const [user, setUser] = useState(null)
   const isAuthenticated = () => {
     return user !== null;
@@ -47,9 +45,9 @@ function AppWs() {
 
   return (
     <div className="AppWs">
-      <GridWs isAuthenticated={isAuthenticated} gridSize={gridSize} user={user} gridData={grid} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState} />
+      {/* <GridWs isAuthenticated={isAuthenticated} gridSize={gridSize} user={user} gridData={grid} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState} /> */}
       <LogIn auth={auth} />
-      <div><a href="https://www.digitalocean.com/?refcode=2133779b2f33&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%202.svg" alt="DigitalOcean Referral Badge" /></a></div>
+      <Image height={64} width={64} imageData={grid}></Image>
     </div>
   );
 }

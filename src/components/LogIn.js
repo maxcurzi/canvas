@@ -1,9 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import 'firebaseui/dist/firebaseui.css';
 import {
-  // getAuth,
   EmailAuthProvider,
-  GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
   sendEmailVerification,
@@ -19,19 +17,7 @@ const LogIn = (props) => {
     const uiConfig = {
       credentialHelper: firebaseui.auth.CredentialHelper.NONE,
       signInOptions: [
-        // Email / Password Provider.
         EmailAuthProvider.PROVIDER_ID,
-        // {
-        //   provider: GoogleAuthProvider.PROVIDER_ID,
-        //   scopes: [
-        //     'https://www.googleapis.com/auth/contacts.readonly'
-        //   ],
-        //   customParameters: {
-        //     // Forces account selection even when one account
-        //     // is available.
-        //     prompt: 'select_account'
-        //   }
-        // },
       ],
       callbacks: {
         signInSuccessWithAuthResult: function (authResult, redirectUrl) {
@@ -40,7 +26,6 @@ const LogIn = (props) => {
           {
             sendEmailVerification(user);
           }
-          // Handle sign-in.
           return false;
         },
       },

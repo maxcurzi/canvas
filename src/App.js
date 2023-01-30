@@ -9,8 +9,6 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 import { getPerformance } from "firebase/performance";
 
-import { Tooltip } from 'react-tooltip'
-
 function App() {
   const [user, setUser] = useState(null)
   const gridSize = 64;
@@ -31,7 +29,6 @@ function App() {
     <div className="App">
       <Grid isAuthenticated={isAuthenticated} gridSize={gridSize} user={user} />
       <div className="float-container">
-        {user && user.uid === "UNWpWi32gPXW35xGEM08l2Tli9i2" ? <button onClick={function () { if (user !== null) { resetGrid(gridSize) } }}>Reset</button> : null}
         <LogIn auth={auth} />
         </div>
     </div>
