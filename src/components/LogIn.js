@@ -21,17 +21,17 @@ const LogIn = (props) => {
       signInOptions: [
         // Email / Password Provider.
         EmailAuthProvider.PROVIDER_ID,
-        {
-          provider: GoogleAuthProvider.PROVIDER_ID,
-          scopes: [
-            'https://www.googleapis.com/auth/contacts.readonly'
-          ],
-          customParameters: {
-            // Forces account selection even when one account
-            // is available.
-            prompt: 'select_account'
-          }
-        },
+        // {
+        //   provider: GoogleAuthProvider.PROVIDER_ID,
+        //   scopes: [
+        //     'https://www.googleapis.com/auth/contacts.readonly'
+        //   ],
+        //   customParameters: {
+        //     // Forces account selection even when one account
+        //     // is available.
+        //     prompt: 'select_account'
+        //   }
+        // },
       ],
       callbacks: {
         signInSuccessWithAuthResult: function (authResult, redirectUrl) {
