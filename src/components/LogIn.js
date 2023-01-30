@@ -1,15 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import * as firebaseui from 'firebaseui';
 import 'firebaseui/dist/firebaseui.css';
 import {
   // getAuth,
   EmailAuthProvider,
-  // GoogleAuthProvider,
+  GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
   sendEmailVerification,
 } from 'firebase/auth';
 
+var firebaseui = require('firebaseui');
 
 const LogIn = (props) => {
   const [user, setUser] = useState(null)
@@ -21,7 +21,17 @@ const LogIn = (props) => {
       signInOptions: [
         // Email / Password Provider.
         EmailAuthProvider.PROVIDER_ID,
-        // GoogleAuthProvider.PROVIDER_ID,
+        {
+          provider: GoogleAuthProvider.PROVIDER_ID,
+          scopes: [
+            'https://www.googleapis.com/auth/contacts.readonly'
+          ],
+          customParameters: {
+            // Forces account selection even when one account
+            // is available.
+            prompt: 'select_account'
+          }
+        },
       ],
       callbacks: {
         signInSuccessWithAuthResult: function (authResult, redirectUrl) {

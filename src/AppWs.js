@@ -48,8 +48,8 @@ function AppWs() {
   return (
     <div className="AppWs">
       <GridWs isAuthenticated={isAuthenticated} gridSize={gridSize} user={user} gridData={grid} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState} />
-        {user && user.uid === "UNWpWi32gPXW35xGEM08l2Tli9i2" ? <button onClick={function () { if (user !== null) { resetGrid(gridSize) } }}>Reset</button> : null}
-        <LogIn auth={auth} />
+      <LogIn auth={auth} />
+      <div><a href="https://www.digitalocean.com/?refcode=2133779b2f33&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%202.svg" alt="DigitalOcean Referral Badge" /></a></div>
     </div>
   );
 }
