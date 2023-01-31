@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import asyncio
 import json
 import websockets
@@ -39,22 +40,55 @@ ssl_key = "/etc/letsencrypt/live/canvas.maxcurzi.com/privkey.pem"
 ssl_context.load_cert_chain(ssl_cert, keyfile=ssl_key)
 
 
-async def handle_client(websocket):
-    CONNECTIONS.add(websocket)
-    while True:
-        try:
-            message = await websocket.recv()
-            logger.debug(f"message:{message}")
-            await COMMANDS.put(message)
-        except websockets.exceptions.ConnectionClosedOK:
-            logger.info("Closed OK")
-            break
-        except Exception as e:
-            logger.error(f"{e}")
-            break
+class PubSub:
+    def __init__(self):
+        self.waiter = asyncio.Future()
+
+    def publish(self, value):
+        waiter, self.waiter = self.waiter, asyncio.Future()
+        waiter.set_result((value, self.waiter))
+
+    async def subscribe(self):
+        waiter = self.waiter
+        while True:
+            value, waiter = await waiter
+            yield value
+
+    __aiter__ = subscribe
 
 
-async def broadcast_game(framerate=5):
+PUBSUB = PubSub()
+
+# async def game_producer():
+#     while True:
+#         data = str(time.perf_counter())
+#         PUBSUB.publish(data)
+#         await asyncio.sleep(1)
+
+
+async def handler(websocket):
+    consumer_task = asyncio.create_task(consumer_handler(websocket))
+    producer_task = asyncio.create_task(producer_handler(websocket))
+    done, pending = await asyncio.wait(
+        [consumer_task, producer_task],
+        return_when=asyncio.FIRST_COMPLETED,
+    )
+    for task in pending:
+        task.cancel()
+
+
+async def consumer_handler(websocket):
+    async for message in websocket:
+        logger.debug("Received:" + message)
+        await COMMANDS.put(message)
+
+
+async def producer_handler(websocket):
+    async for value in PUBSUB.subscribe():
+        await websocket.send(value)
+
+
+async def game_producer(framerate=1):
     logger.info("Broadcasting game...")
     while True:
         logger.info("Game start")
@@ -64,7 +98,30 @@ async def broadcast_game(framerate=5):
         t = 0
         while game._winner() == None:
             t += 1
+            while True:
+                try:
+                    command = COMMANDS.get_nowait()
+                    try:
+                        command = json.loads(command)
+                        if isinstance(command, dict) and command.keys() >= {
+                            "x",
+                            "y",
+                            "user",
+                        }:
+                            game.click_at(
+                                x=command["x"], y=command["y"], owner=command["user"]
+                            )
+                        else:
+                            logger.error(f"Received wrong message:{command}")
+                    except json.decoder.JSONDecodeError:
+                        logger.error(f"Received wrong message:{command}")
+                        break
+                except asyncio.QueueEmpty:
+                    break
+            await asyncio.sleep(max(0, 1 / framerate - 0.03))
+
             game.update()
+            print("CABOOT!")
             gameframe = np.array(game.frame.convert("P")).flatten().tolist()
             owners_dict = {}
             owners = game.owners_map
@@ -72,22 +129,13 @@ async def broadcast_game(framerate=5):
                 owners_dict[x * x_max + y] = owner
             message_dict = {"pixels": gameframe, "owners": owners_dict}
             message = json.dumps(message_dict)
-            websockets.broadcast(CONNECTIONS, message)
-            while True:
-                try:
-                    command = COMMANDS.get_nowait()
-                    command = json.loads(command)
-                    game.click_at(x=command["x"], y=command["y"], owner=command["user"])
-                except asyncio.QueueEmpty:
-                    break
-                await asyncio.sleep(0)
-
-            await asyncio.sleep(0)
+            PUBSUB.publish(message)
+            # PUBSUB.publish(str(time.perf_counter()))
 
 
-async def main(framerate=1, wss_port=8765, wss_address="canvas.maxcurzi.com"):
-    async with websockets.serve(handle_client, wss_address, wss_port, ssl=ssl_context):
-        await asyncio.gather(broadcast_game(framerate=framerate))
+async def main(framerate, wss_port, wss_address):
+    async with websockets.serve(handler, wss_address, wss_port, ssl=ssl_context):
+        await game_producer(framerate=framerate)
 
 
 def parse_args():
