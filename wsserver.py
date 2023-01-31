@@ -14,32 +14,6 @@ class CanvasInvaders(SpaceInvaders, CanvasApp):
     pass
 
 
-# Create logger
-logger = logging.getLogger("WS Server")
-logger.setLevel(logging.DEBUG)
-
-# create console handler and set level to debug
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-
-# create formatter
-formatter = logging.Formatter("%(asctime)s | %(name)s | [%(levelname)s]: %(message)s")
-
-# add formatter to ch
-ch.setFormatter(formatter)
-
-# add ch to logger
-logger.addHandler(ch)
-
-CONNECTIONS = set()
-COMMANDS = asyncio.Queue()
-
-ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-ssl_cert = "/etc/letsencrypt/live/canvas.maxcurzi.com/fullchain.pem"
-ssl_key = "/etc/letsencrypt/live/canvas.maxcurzi.com/privkey.pem"
-ssl_context.load_cert_chain(ssl_cert, keyfile=ssl_key)
-
-
 class PubSub:
     def __init__(self):
         self.waiter = asyncio.Future()
@@ -59,11 +33,22 @@ class PubSub:
 
 PUBSUB = PubSub()
 
-# async def game_producer():
-#     while True:
-#         data = str(time.perf_counter())
-#         PUBSUB.publish(data)
-#         await asyncio.sleep(1)
+# Create and setup logger
+logger = logging.getLogger("WS Server")
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s | %(name)s | [%(levelname)s]: %(message)s")
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
+# HTTPS/SSL setup
+ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+ssl_cert = "/etc/letsencrypt/live/canvas.maxcurzi.com/fullchain.pem"
+ssl_key = "/etc/letsencrypt/live/canvas.maxcurzi.com/privkey.pem"
+ssl_context.load_cert_chain(ssl_cert, keyfile=ssl_key)
+
+# Commands received
+COMMANDS = asyncio.Queue()
 
 
 async def handler(websocket):
@@ -121,7 +106,6 @@ async def game_producer(framerate=1):
             await asyncio.sleep(max(0, 1 / framerate - 0.03))
 
             game.update()
-            print("CABOOT!")
             gameframe = np.array(game.frame.convert("P")).flatten().tolist()
             owners_dict = {}
             owners = game.owners_map
@@ -130,7 +114,6 @@ async def game_producer(framerate=1):
             message_dict = {"pixels": gameframe, "owners": owners_dict}
             message = json.dumps(message_dict)
             PUBSUB.publish(message)
-            # PUBSUB.publish(str(time.perf_counter()))
 
 
 async def main(framerate, wss_port, wss_address):
