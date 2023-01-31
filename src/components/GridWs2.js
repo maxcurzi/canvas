@@ -84,11 +84,8 @@ const Image = ({
     const ctx = canvas.getContext('2d');
     const imageData = ctx.getImageData(x, y, 1, 1).data;
 
-    // console.log(Math.floor(x), Math.floor(y), imageData);
     if (readyState === 1) {
-      console.log("sending")
       webSocket.send(JSON.stringify({x:Math.floor(x), y:Math.floor(y), user:user.uid == null ? "NA" : user.displayName}))
-      console.log("sent")
     }
   };
   useEffect(() => {
