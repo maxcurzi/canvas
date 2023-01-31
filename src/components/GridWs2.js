@@ -6,7 +6,7 @@ const Image = ({
   width,
   height,
   user,
-  ownersRaw,
+  owners,
   sendMessage,
   webSocket,
   readyState }) => {
@@ -17,8 +17,7 @@ const Image = ({
   const divWidth = width;
   const divHeight = height;
   const [scale, setScale] = useState(1);
-  const [owners, setOwners] = useState(Array(width * height).fill(""))
-
+  const [lastClickTime, setLastClickTime] = useState(0);
   const handleWheel = useCallback((event) => {
     event.preventDefault();
     const delta = event.deltaY < 0 ? 1.1 : 0.9;
@@ -35,16 +34,7 @@ const Image = ({
   //     canvasRef.current.removeEventListener("wheel", handleWheel);
   //   };
   // }, [handleWheel])
-  useEffect(() => {
-    console.log(ownersRaw)
-    if (ownersRaw){
-      const parsedOwners = JSON.parse(ownersRaw);
-      setOwners(parsedOwners);
-    }
-    else {
-      setOwners(Array(width * height).fill(""))
-    }
-  },[ownersRaw])
+
   useEffect(() => {
     canvasRef.current.style.transform = `scale(${scale})`;
     canvasDiv.current.style.transform = `scale(${scale})`;
@@ -55,10 +45,9 @@ const Image = ({
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
     const imgData = ctx.createImageData(width, height);
-    const parsedGrid = JSON.parse(imageData);
     const data = new Uint8ClampedArray(4096 * 4);
     for (let i = 0; i < 4096; i++) {
-      const color = parsedGrid[i];
+      const color = imageData[i];
       const [r, g, b, a] = mapColorToRGBA(color);
       data[i * 4] = r;
       data[i * 4 + 1] = g;
@@ -71,22 +60,28 @@ const Image = ({
   }, [imageData, width, height]);
 
   const handleClick = (event) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    let now_t = Date.now()
+    if (now_t - lastClickTime > 1000) {
 
-    const rect = canvas.getBoundingClientRect();
-    let x = (event.clientX - rect.left);
-    let y = (event.clientY - rect.top);
-    x = x < 0 ? 0 : x;
-    y = y < 0 ? 0 : y;
-    x = x >= height ? height-1 : x;
-    y = y >= width ? width-1 : y;
-    const ctx = canvas.getContext('2d');
-    const imageData = ctx.getImageData(x, y, 1, 1).data;
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-    if (readyState === 1) {
-      webSocket.send(JSON.stringify({x:Math.floor(x), y:Math.floor(y), user:user.uid == null ? "NA" : user.displayName}))
+      const rect = canvas.getBoundingClientRect();
+      let x = (event.clientX - rect.left);
+      let y = (event.clientY - rect.top);
+      x = x < 0 ? 0 : x;
+      y = y < 0 ? 0 : y;
+      x = x >= height ? height-1 : x;
+      y = y >= width ? width-1 : y;
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.getImageData(x, y, 1, 1).data;
+
+      if (readyState === 1) {
+        webSocket.send(JSON.stringify({x:Math.floor(x), y:Math.floor(y), user:user.uid == null ? "NA" : user.displayName}))
+      }
+      setLastClickTime(now_t);
     }
+
   };
   useEffect(() => {
 
@@ -105,7 +100,6 @@ const Image = ({
       // Calculate the index of the array based on x and y
       const index = Math.floor(y) * width + Math.floor(x);
       const content = owners[index];
-
       // Update the content of the tooltip
       tooltip.innerHTML = content;
 
@@ -114,13 +108,13 @@ const Image = ({
       tooltip.style.left = tipx + "px";
       tooltip.style.top = tipy + "px";
       tooltip.style.visibility = content===undefined?"hidden":"visible";
-    });
+    },[]);
 
     canvas.addEventListener('mouseout', () => {
       // Hide the tooltip
       tooltip.style.display = 'none';
     });
-  }, []);
+  }, [owners, imageData]);
 
   return (
     <div

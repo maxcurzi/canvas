@@ -14,16 +14,16 @@ const WS_URL = 'wss://canvas.maxcurzi.com/wss/';
 
 const gridSize = 64;
 function AppWs() {
-  const [grid, setGrid] = useState(JSON.stringify(Array(gridSize * gridSize).fill(0)));
-  const [owners, setOwners] = useState(JSON.stringify(Array(gridSize * gridSize).fill("")));
+  const [grid, setGrid] = useState(Array(gridSize * gridSize).fill(0));
+  const [owners, setOwners] = useState(Array(gridSize * gridSize).fill(""));
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(WS_URL, {
     onOpen: () => {
       console.log('WebSocket connection established!');
     },
     onMessage: e => {
       let msg = JSON.parse(e.data)
-      setGrid(JSON.stringify(msg.pixels))
-      setOwners(JSON.stringify(msg.owners))
+      setGrid(msg.pixels)
+      setOwners(msg.owners)
     },
     shouldReconnect: (_closeEvent) => true,
   });
@@ -47,7 +47,7 @@ function AppWs() {
     <div className="AppWs">
       {/* <GridWs isAuthenticated={isAuthenticated} gridSize={gridSize} user={user} gridData={grid} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState} /> */}
       <LogIn auth={auth} />
-      <Image height={64} width={64} imageData={grid} user={user} ownersRaw={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState}></Image>
+      <Image height={64} width={64} imageData={grid} user={user} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState}></Image>
     </div>
   );
 }
