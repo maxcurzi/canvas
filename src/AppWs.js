@@ -47,7 +47,7 @@ function AppWs() {
     <div className="AppWs">
       {/* <GridWs isAuthenticated={isAuthenticated} gridSize={gridSize} user={user} gridData={grid} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState} /> */}
       <LogIn auth={auth} />
-      <Image height={64} width={64} imageData={grid}></Image>
+      <Image height={64} width={64} imageData={grid} user={user} ownersRaw={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState}></Image>
     </div>
   );
 }
