@@ -17,7 +17,7 @@ class App:
     ) -> None:
         self.resolution = (width, height)
         self.pixels = [Colors.INACTIVE] * (width * height)
-        self._owners = [None] * (width * height)
+        self._owners = {}
 
     def update(self):
         """Main game update step, it should be called in a loop to progress the
@@ -33,18 +33,14 @@ class App:
         self.pixels[idx] = (
             Colors.ACTIVE if pixel_state == Colors.INACTIVE else Colors.INACTIVE
         )
-        self._owners[idx] = owner
+        self._owners[(y, x)] = owner
 
     @property
     def owners_map(self):
         """Each pixel can have an owner, for example when a player clicks on the
         spaceship to shoot a rocket, the pixels composing the rocket will
         'belong' to that user."""
-        om = {}
-        for idx, owner in enumerate(self._owners):
-            if owner is not None:
-                om[idx] = owner
-        return om
+        return self._owners
 
     @property
     def frame(self):
