@@ -12,7 +12,7 @@ import { getPerformance } from "firebase/performance";
 import useWebSocket from 'react-use-websocket';
 const WS_URL = 'wss://canvas.maxcurzi.com/wss/';
 
-const gridSize = 64;
+const gridSize = 640;
 function AppWs() {
   const [grid, setGrid] = useState(Array(gridSize * gridSize).fill(0));
   const [owners, setOwners] = useState(Array(gridSize * gridSize).fill(""));
@@ -47,7 +47,7 @@ function AppWs() {
     <div className="AppWs">
       {/* <GridWs isAuthenticated={isAuthenticated} gridSize={gridSize} user={user} gridData={grid} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState} /> */}
       <LogIn auth={auth} />
-      <Image height={64} width={64} imageData={grid} user={user} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState}></Image>
+      <Image height={640} width={640} imageData={grid} user={user} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState}></Image>
     </div>
   );
 }

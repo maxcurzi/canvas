@@ -45,8 +45,8 @@ const Image = ({
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
     const imgData = ctx.createImageData(width, height);
-    const data = new Uint8ClampedArray(4096 * 4);
-    for (let i = 0; i < 4096; i++) {
+    const data = new Uint8ClampedArray(width*height * 4);
+    for (let i = 0; i < width*height; i++) {
       const color = imageData[i];
       const [r, g, b, a] = mapColorToRGBA(color);
       data[i * 4] = r;
@@ -95,8 +95,8 @@ const Image = ({
       y = y < 0 ? 0 : y;
       x = x >= height ? height-1 : x;
       y = y >= width ? width-1 : y;
-      const tipx = x+120
-      const tipy = y+10
+      const tipx = x
+      const tipy = y
       // Calculate the index of the array based on x and y
       const index = Math.floor(y) * width + Math.floor(x);
       const content = owners[index];
@@ -122,8 +122,8 @@ const Image = ({
       height={divHeight}
       ref={canvasDiv}
       style={{
-        width: 320,
-        height: 320,
+        width: divWidth,
+        height: divHeight,
         overflow: "hidden",
       }}>
       <canvas
