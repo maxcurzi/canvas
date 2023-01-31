@@ -50,3 +50,9 @@ class CanvasApp(ABC):
     def frame(self) -> Image:
         """Returns current app frame"""
         pass
+
+    @property
+    @abstractmethod
+    def finished(self) -> bool:
+        """Returns true if the game ended."""
+        pass
