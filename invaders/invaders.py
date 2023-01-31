@@ -106,6 +106,11 @@ class Game:
             -90
         )
 
+    @property
+    def finished(self) -> bool:
+        """Returns true if the game ended."""
+        return self._winner() is not None
+
     def _defaults(self):
         alien_locations = [
             (1, 2),
