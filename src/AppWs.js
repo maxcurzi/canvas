@@ -12,7 +12,7 @@ import { getPerformance } from "firebase/performance";
 import useWebSocket from 'react-use-websocket';
 const WS_URL = 'wss://canvas.maxcurzi.com/wss/';
 
-const gridSize = 640;
+const gridSize = 64;
 function AppWs() {
   const [grid, setGrid] = useState(Array(gridSize * gridSize).fill(0));
   const [owners, setOwners] = useState(Array(gridSize * gridSize).fill(""));
