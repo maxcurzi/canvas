@@ -49,12 +49,6 @@ formatter = logging.Formatter("%(asctime)s | %(name)s | [%(levelname)s]: %(messa
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-# HTTPS/SSL setup
-ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-ssl_cert = "/etc/letsencrypt/live/canvas.maxcurzi.com/fullchain.pem"
-ssl_key = "/etc/letsencrypt/live/canvas.maxcurzi.com/privkey.pem"
-ssl_context.load_cert_chain(ssl_cert, keyfile=ssl_key)
-
 # Commands received
 COMMANDS = asyncio.Queue()
 
@@ -124,8 +118,8 @@ async def game_producer(framerate=1):
             PUBSUB.publish(message)
 
 
-async def main(framerate, wss_port, wss_address):
-    async with websockets.serve(handler, wss_address, wss_port, ssl=ssl_context):
+async def main(framerate: float, ws_port: int, ws_address: str, ssl_context):
+    async with websockets.serve(handler, ws_address, ws_port, ssl=ssl_context):
         await game_producer(framerate=framerate)
 
 
@@ -152,12 +146,31 @@ def parse_args():
         help="Websocket address",
         default="canvas.maxcurzi.com",
     )
+    parser.add_argument(
+        "-u",
+        "--unsecure",
+        help="Use unsecure web sockets",
+        action="store_true",
+    )
     args = parser.parse_args()
     return args
 
 
 if __name__ == "__main__":
     args = parse_args()
+    if not args.unsecure:
+        # HTTPS/SSL setup
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ssl_cert = "/etc/letsencrypt/live/canvas.maxcurzi.com/fullchain.pem"
+        ssl_key = "/etc/letsencrypt/live/canvas.maxcurzi.com/privkey.pem"
+        ssl_context.load_cert_chain(ssl_cert, keyfile=ssl_key)
+    else:
+        ssl_context = None
     asyncio.run(
-        main(framerate=args.framerate, wss_port=args.port, wss_address=args.address)
+        main(
+            framerate=args.framerate,
+            ws_port=args.port,
+            ws_address=args.address,
+            ssl_context=ssl_context,
+        )
     )
