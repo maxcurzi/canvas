@@ -4,6 +4,7 @@ import json
 import websockets
 import numpy as np
 from invaders.invaders import Game as SpaceInvaders
+from place.place import App as Place
 from games.interface import CanvasApp
 import ssl
 import logging
@@ -14,13 +15,20 @@ class CanvasInvaders(SpaceInvaders, CanvasApp):
     pass
 
 
+class CanvasPlace(Place, CanvasApp):
+    pass
+
+
 class PubSub:
     def __init__(self):
         self.waiter = asyncio.Future()
 
     def publish(self, value):
         waiter, self.waiter = self.waiter, asyncio.Future()
-        waiter.set_result((value, self.waiter))
+        try:
+            waiter.set_result((value, self.waiter))
+        except asyncio.exceptions.InvalidStateError as e:
+            logger.error(e)
 
     async def subscribe(self):
         waiter = self.waiter
@@ -78,10 +86,10 @@ async def game_producer(framerate=1):
     while True:
         logger.info("Game start")
         game = CanvasInvaders(framerate=framerate)
-        x_max = game.screen.get_width()
-        y_max = game.screen.get_height()
+        x_max = game.resolution[0]
+        y_max = game.resolution[1]
         t = 0
-        while game._winner() == None:
+        while not game.finished:
             t += 1
             while True:
                 try:
@@ -103,7 +111,7 @@ async def game_producer(framerate=1):
                         break
                 except asyncio.QueueEmpty:
                     break
-            await asyncio.sleep(max(0, 1 / framerate - 0.03))
+            await asyncio.sleep(max(0.01, 1 / framerate - 0.03))
 
             game.update()
             gameframe = np.array(game.frame.convert("P")).flatten().tolist()
