@@ -1,4 +1,5 @@
-from PIL import Image  # , ImageOps
+"""Monochromatic pixel placement app."""
+from PIL import Image
 import numpy as np
 from enum import Enum
 
@@ -25,9 +26,7 @@ class App:
         pass
 
     def click_at(self, x, y, owner=None):
-        """User inputs are clicks to the grid pixels, we add these inputs to a
-        queue for later processing, and we store an identifier of who clicked
-        it, for later retrieval/identification of who caused a certain effect."""
+        """User clicks x,y coordinates and we toggle that pixel's color"""
         idx = y * self.resolution[0] + x
         pixel_state = self.pixels[idx]
         self.pixels[idx] = (
@@ -37,9 +36,7 @@ class App:
 
     @property
     def owners_map(self):
-        """Each pixel can have an owner, for example when a player clicks on the
-        spaceship to shoot a rocket, the pixels composing the rocket will
-        'belong' to that user."""
+        """Each pixel can have an owner, that's the last user that clicked on it"""
         return self._owners
 
     @property
@@ -48,15 +45,9 @@ class App:
             np.array([x.value for x in self.pixels], dtype=np.uint8).reshape(
                 self.resolution
             )
-        )  # .rotate(-90)
+        )
 
     @property
     def finished(self) -> bool:
         """Returns true if the game ended."""
         return False
-
-
-a = App()
-a.click_at(2, 10, "John")
-b = a.frame
-b.save("lolsid.png")
