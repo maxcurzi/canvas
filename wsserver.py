@@ -9,6 +9,11 @@ from games.interface import CanvasApp
 import ssl
 import logging
 import argparse
+from utils import PubSub
+
+
+class InternalError(Exception):
+    pass
 
 
 class CanvasInvaders(SpaceInvaders, CanvasApp):
@@ -17,26 +22,6 @@ class CanvasInvaders(SpaceInvaders, CanvasApp):
 
 class CanvasPlace(Place, CanvasApp):
     pass
-
-
-class PubSub:
-    def __init__(self):
-        self.waiter = asyncio.Future()
-
-    def publish(self, value):
-        waiter, self.waiter = self.waiter, asyncio.Future()
-        try:
-            waiter.set_result((value, self.waiter))
-        except asyncio.exceptions.InvalidStateError as e:
-            logger.error(e)
-
-    async def subscribe(self):
-        waiter = self.waiter
-        while True:
-            value, waiter = await waiter
-            yield value
-
-    __aiter__ = subscribe
 
 
 PUBSUB = PubSub()
@@ -49,7 +34,7 @@ formatter = logging.Formatter("%(asctime)s | %(name)s | [%(levelname)s]: %(messa
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-# Commands received
+# Commands (clicks) received
 COMMANDS = asyncio.Queue()
 
 
@@ -75,7 +60,7 @@ async def producer_handler(websocket):
         await websocket.send(value)
 
 
-async def game_producer(framerate=1):
+async def game_producer(framerate: float = 1):
     logger.info("Broadcasting game...")
     while True:
         logger.info("Game start")
@@ -99,12 +84,18 @@ async def game_producer(framerate=1):
                                 x=command["x"], y=command["y"], owner=command["user"]
                             )
                         else:
-                            logger.error(f"Received wrong message:{command}")
-                    except json.decoder.JSONDecodeError:
-                        logger.error(f"Received wrong message:{command}")
-                        break
+                            logger.debug(f"Received wrong message:{command}")
+                    except json.decoder.JSONDecodeError as E:
+                        logger.debug(f"Received wrong message:{command}")
+                        raise InternalError from E
+
                 except asyncio.QueueEmpty:
                     break
+                except InternalError:
+                    break
+
+            # Async sleep as much as possible until the next update.
+            # Pygame updates are blocking and not async
             await asyncio.sleep(max(0.01, 1 / framerate - 0.03))
 
             game.update()
@@ -113,13 +104,15 @@ async def game_producer(framerate=1):
             owners = game.owners_map
             for ((x, y), owner) in owners.items():
                 owners_dict[x * x_max + y] = owner
+            # We send the whole frame every time. Not a great solution for large
+            # canvases but ok for small ones.
             message_dict = {"pixels": gameframe, "owners": owners_dict}
             message = json.dumps(message_dict)
             PUBSUB.publish(message)
 
 
 async def main(framerate: float, ws_port: int, ws_address: str, ssl_context):
-    async with websockets.serve(handler, ws_address, ws_port, ssl=ssl_context):
+    async with websockets.serve(handler, ws_address, ws_port, ssl=ssl_context):  # type: ignore
         await game_producer(framerate=framerate)
 
 
