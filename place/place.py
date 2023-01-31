@@ -54,6 +54,11 @@ class App:
             )
         )  # .rotate(-90)
 
+    @property
+    def finished(self) -> bool:
+        """Returns true if the game ended."""
+        return False
+
 
 a = App()
 a.click_at(2, 10, "John")
