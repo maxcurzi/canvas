@@ -1,115 +1,12 @@
-.grid {
-    display: grid;
-    /* grid-template-columns: repeat(32, 10px);
-    grid-template-rows: repeat(32, 10px); */
-    background-color: white;
-    min-width: 1px;
-}
-
-.box.hovered {
-    background-color: grey;
-}
-
-.box {
-    /* width: 6px;
-    height: 6px; */
-    /* margin: 1px; */
-    padding: 0;
-    margin: 0;
-    padding: 0;
-}
-
-.tooltip-title {
-    background-color: red;
+.tooltip {
+    position: absolute;
+    visibility: hidden;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 4px;
     color: white;
-}
-
-
-.box.color0 {
-    background-color: #000000;
-}
-
-.box.color1 {
-    background-color: #FFFFFF;
-}
-
-.box.color2 {
-    background-color: #ff0000;
-}
-
-.box.color3 {
-    background-color: #00FF00;
-}
-
-.box.color4 {
-    background-color: #0000FF;
-}
-
-.box.color5 {
-    background-color: #00FFFF;
-}
-
-.box.color6 {
-    background-color: #FF00FF;
-}
-
-.box.color7 {
-    background-color: #FFFF00;
-}
-
-
-.box.color16 {
-    background-color: #140c1c;
-}
-
-.box.color47 {
-    background-color: #442434;
-}
-
-.box.color57 {
-    background-color: #30346d;
-}
-
-.box.color76 {
-    background-color: #4e4a4e;
-}
-
-.box.color77 {
-    background-color: #306230;
-}
-
-.box.color79 {
-    background-color: #346524;
-}
-
-.box.color90 {
-    background-color: #854c30;
-}
-
-.box.color112 {
-    background-color: #757161;
-}
-
-.box.color123 {
-    background-color: #597dce;
-}
-
-.box.color137 {
-    background-color: #6daa2c;
-}
-
-.box.color141 {
-    background-color: #d27d2c;
-}
-
-.box.color169 {
-    background-color: #6dc2ca;
-}
-
-.box.color180 {
-    background-color: #d2aa99;
-}
-
-.box.color255 {
-    background-color: #FFFFFF;
+    font-size: 14px;
+    max-width: 200px;
+    text-align: center;
+    z-index: 2;
 }
