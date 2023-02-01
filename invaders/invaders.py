@@ -371,7 +371,7 @@ class Game:
             self.rocket_bar.y = y0 + 3
 
             self.owner = owner
-            self.update_rate = 1
+            self.update_rate = 2
             self.shoot_dt = random.randint(5, 7)
             self.t = 0
             self.dx = 1
