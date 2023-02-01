@@ -7,7 +7,7 @@ import {
   sendEmailVerification,
 } from 'firebase/auth';
 
-var firebaseui = require('firebaseui');
+import * as firebaseui from "firebaseui"
 
 const LogIn = (props) => {
   const [user, setUser] = useState(null)
@@ -20,7 +20,7 @@ const LogIn = (props) => {
         EmailAuthProvider.PROVIDER_ID,
       ],
       callbacks: {
-        signInSuccessWithAuthResult: function (authResult, redirectUrl) {
+        signInSuccessWithAuthResult: function (authResult) {
           var user = authResult.user;
           if (authResult.additionalUserInfo.isNewUser)
           {
@@ -31,9 +31,7 @@ const LogIn = (props) => {
       },
     };
 
-    if (user) {
-    }
-    else{
+    if (user===null) {
       const ui = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(props.auth);
       ui.start('#firebaseui-auth-container', uiConfig);
     }

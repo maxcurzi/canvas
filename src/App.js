@@ -22,7 +22,7 @@ function AppWs() {
       setGrid(msg.pixels)
       setOwners(msg.owners)
     },
-    shouldReconnect: (_closeEvent) => true,
+    shouldReconnect: () => true,
   });
   const [user, setUser] = useState(null)
   const isAuthenticated = () => {
