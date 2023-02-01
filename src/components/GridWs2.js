@@ -1,52 +1,31 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import './styles/grid2.css';
+import webSafeColors from './WebSafeColors'
+
+function mapColorToRGBA(colorValue) {
+  return webSafeColors[colorValue];
+}
 
 const Image = ({
   imageData,
   width,
   height,
-  user,
   owners,
+  user,
+  isAuthenticated,
   sendMessage,
-  webSocket,
   readyState }) => {
-
   const canvasRef = useRef(null);
-  const canvasDiv = useRef(null);
   const tooltipRef = useRef(null);
-  const divWidth = width;
-  const divHeight = height;
-  const [scale, setScale] = useState(1);
   const [lastClickTime, setLastClickTime] = useState(0);
-  const handleWheel = useCallback((event) => {
-    event.preventDefault();
-    const delta = event.deltaY < 0 ? 1.1 : 0.9;
-    setScale(scale * delta);
-  }, [scale]);
 
-  // useEffect(() => {
-  //   canvasRef.current.addEventListener(
-  //     "wheel",
-  //     handleWheel,
-  //     { passive: false }
-  //   );
-  //   return () => {
-  //     canvasRef.current.removeEventListener("wheel", handleWheel);
-  //   };
-  // }, [handleWheel])
-
-  useEffect(() => {
-    canvasRef.current.style.transform = `scale(${scale})`;
-    canvasDiv.current.style.transform = `scale(${scale})`;
-  }, [scale]);
-
-  useEffect(() => {
+  useEffect(()=>{
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
     const imgData = ctx.createImageData(width, height);
-    const data = new Uint8ClampedArray(width*height * 4);
-    for (let i = 0; i < width*height; i++) {
+    const data = new Uint8ClampedArray(width * height * 4);
+    for (let i = 0; i < width * height; i++) {
       const color = imageData[i];
       const [r, g, b, a] = mapColorToRGBA(color);
       data[i * 4] = r;
@@ -56,8 +35,7 @@ const Image = ({
     }
     imgData.data.set(data);
     ctx.putImageData(imgData, 0, 0);
-
-  }, [imageData, width, height]);
+  }, [imageData, height, width]);
 
   const handleClick = (event) => {
     let now_t = Date.now()
@@ -69,39 +47,35 @@ const Image = ({
       const rect = canvas.getBoundingClientRect();
       let x = (event.clientX - rect.left);
       let y = (event.clientY - rect.top);
+
+      // Adjust for off-by-one error (happens on some zoom levels)
       x = x < 0 ? 0 : x;
       y = y < 0 ? 0 : y;
       x = x >= height ? height-1 : x;
       y = y >= width ? width-1 : y;
-      const ctx = canvas.getContext('2d');
-      const imageData = ctx.getImageData(x, y, 1, 1).data;
 
-      if (readyState === 1) {
-        webSocket.send(JSON.stringify({x:Math.floor(x), y:Math.floor(y), user:user.uid == null ? "NA" : user.displayName}))
+      if ((readyState === 1) && isAuthenticated()){
+        sendMessage(JSON.stringify({x:Math.floor(x), y:Math.floor(y), user:user.uid == null ? "NA" : user.displayName}))
       }
       setLastClickTime(now_t);
     }
-
   };
-  useEffect(() => {
 
+  useEffect(() => {
     const canvas = canvasRef.current;
     const tooltip = tooltipRef.current;
     canvas.addEventListener('mousemove', (event) => {
       const rect = canvas.getBoundingClientRect();
-      let x = event.clientX - rect.left - 0.5;
-      let y = event.clientY - rect.top - 0.5;
-      x = x < 0 ? 0 : x;
-      y = y < 0 ? 0 : y;
-      x = x >= height ? height-1 : x;
-      y = y >= width ? width-1 : y;
-      const tipx = x
-      const tipy = y
+      let x = (event.clientX - rect.left);
+      let y = (event.clientY - rect.top);
+      const tipx = event.clientX
+      const tipy = event.clientY
       // Calculate the index of the array based on x and y
       const index = Math.floor(y) * width + Math.floor(x);
       const content = owners[index];
       // Update the content of the tooltip
       tooltip.innerHTML = content;
+      // tooltip.innerHTML = Math.floor(x)  +","+ Math.floor(y);
 
       // Show the tooltip
       tooltip.style.display = 'block';
@@ -114,295 +88,22 @@ const Image = ({
       // Hide the tooltip
       tooltip.style.display = 'none';
     });
-  }, [owners, imageData]);
+  }, [owners, imageData, width]);
 
   return (
-    <div
-      width={divWidth}
-      height={divHeight}
-      ref={canvasDiv}
-      style={{
-        width: divWidth,
-        height: divHeight,
-        overflow: "hidden",
-      }}>
+    <div>
       <canvas
         ref={canvasRef}
         width={width}
         height={height}
         style={{
           imageRendering: "pixelated",
-          width: {width},
-          height: {height}
         }}
         onClick={handleClick}
         />
-        <div className="tooltip" ref={tooltipRef}>Tooltip Content</div>
+      <div className="tooltip" ref={tooltipRef}>Tooltip Content</div>
     </div>
   );
 };
 
 export default Image;
-
-function mapColorToRGBA(colorValue) {
-  return webSafeColors[colorValue];
-}
-
-const webSafeColors = [
-  [0,0,0,255],
-  [0,0,0,255],
-  [0,0,0,255],
-  [0,0,0,255],
-  [0,0,0,255],
-  [0,0,0,255],
-  [0,0,0,255],
-  [0,0,0,255],
-  [0,0,0,255],
-  [0,0,0,255],
-  [0,0,0,255],
-  [51,0,0,255],
-  [102,0,0,255],
-  [153,0,0,255],
-  [204,0,0,255],
-  [255,0,0,255],
-  [0,51,0,255],
-  [51,51,0,255],
-  [102,51,0,255],
-  [153,51,0,255],
-  [204,51,0,255],
-  [255,51,0,255],
-  [0,102,0,255],
-  [51,102,0,255],
-  [102,102,0,255],
-  [153,102,0,255],
-  [204,102,0,255],
-  [255,102,0,255],
-  [0,153,0,255],
-  [51,153,0,255],
-  [102,153,0,255],
-  [153,153,0,255],
-  [204,153,0,255],
-  [255,153,0,255],
-  [0,204,0,255],
-  [51,204,0,255],
-  [102,204,0,255],
-  [153,204,0,255],
-  [204,204,0,255],
-  [255,204,0,255],
-  [0,255,0,255],
-  [51,255,0,255],
-  [102,255,0,255],
-  [153,255,0,255],
-  [204,255,0,255],
-  [255,255,0,255],
-  [0,0,51,255],
-  [51,0,51,255],
-  [102,0,51,255],
-  [153,0,51,255],
-  [204,0,51,255],
-  [255,0,51,255],
-  [0,51,51,255],
-  [51,51,51,255],
-  [102,51,51,255],
-  [153,51,51,255],
-  [204,51,51,255],
-  [255,51,51,255],
-  [0,102,51,255],
-  [51,102,51,255],
-  [102,102,51,255],
-  [153,102,51,255],
-  [204,102,51,255],
-  [255,102,51,255],
-  [0,153,51,255],
-  [51,153,51,255],
-  [102,153,51,255],
-  [153,153,51,255],
-  [204,153,51,255],
-  [255,153,51,255],
-  [0,204,51,255],
-  [51,204,51,255],
-  [102,204,51,255],
-  [153,204,51,255],
-  [204,204,51,255],
-  [255,204,51,255],
-  [0,255,51,255],
-  [51,255,51,255],
-  [102,255,51,255],
-  [153,255,51,255],
-  [204,255,51,255],
-  [255,255,51,255],
-  [0,0,102,255],
-  [51,0,102,255],
-  [102,0,102,255],
-  [153,0,102,255],
-  [204,0,102,255],
-  [255,0,102,255],
-  [0,51,102,255],
-  [51,51,102,255],
-  [102,51,102,255],
-  [153,51,102,255],
-  [204,51,102,255],
-  [255,51,102,255],
-  [0,102,102,255],
-  [51,102,102,255],
-  [102,102,102,255],
-  [153,102,102,255],
-  [204,102,102,255],
-  [255,102,102,255],
-  [0,153,102,255],
-  [51,153,102,255],
-  [102,153,102,255],
-  [153,153,102,255],
-  [204,153,102,255],
-  [255, 153, 102, 255],
-  [0,204,102,255],
-  [51,204,102,255],
-  [102,204,102,255],
-  [153,204,102,255],
-  [204,204,102,255],
-  [255,204,102,255],
-  [0,255,102,255],
-  [51,255,102,255],
-  [102,255,102,255],
-  [153,255,102,255],
-  [204,255,102,255],
-  [255,255,102,255],
-  [0,0,153,255],
-  [51,0,153,255],
-  [102,0,153,255],
-  [153,0,153,255],
-  [204,0,153,255],
-  [255,0,153,255],
-  [0,51,153,255],
-  [51,51,153,255],
-  [102,51,153,255],
-  [153,51,153,255],
-  [204,51,153,255],
-  [255,51,153,255],
-  [0,102,153,255],
-  [51,102,153,255],
-  [102,102,153,255],
-  [153,102,153,255],
-  [204,102,153,255],
-  [255,102,153,255],
-  [0,153,153,255],
-  [51,153,153,255],
-  [102,153,153,255],
-  [153,153,153,255],
-  [204,153,153,255],
-  [255,153,153,255],
-  [0,204,153,255],
-  [51,204,153,255],
-  [102,204,153,255],
-  [153,204,153,255],
-  [204,204,153,255],
-  [255,204,153,255],
-  [0,255,153,255],
-  [51,255,153,255],
-  [102,255,153,255],
-  [153,255,153,255],
-  [204,255,153,255],
-  [255,255,153,255],
-  [0,0,204,255],
-  [51,0,204,255],
-  [102,0,204,255],
-  [153,0,204,255],
-  [204,0,204,255],
-  [255,0,204,255],
-  [0,51,204,255],
-  [51,51,204,255],
-  [102,51,204,255],
-  [153,51,204,255],
-  [204,51,204,255],
-  [255,51,204,255],
-  [0,102,204,255],
-  [51,102,204,255],
-  [102,102,204,255],
-  [153,102,204,255],
-  [204,102,204,255],
-  [255,102,204,255],
-  [0,153,204,255],
-  [51,153,204,255],
-  [102,153,204,255],
-  [153,153,204,255],
-  [204,153,204,255],
-  [255,153,204,255],
-  [0,204,204,255],
-  [51,204,204,255],
-  [102,204,204,255],
-  [153,204,204,255],
-  [204,204,204,255],
-  [255,204,204,255],
-  [0,255,204,255],
-  [51,255,204,255],
-  [102,255,204,255],
-  [153,255,204,255],
-  [204,255,204,255],
-  [255,255,204,255],
-  [0,0,255,255],
-  [51,0,255,255],
-  [102,0,255,255],
-  [153,0,255,255],
-  [204,0,255,255],
-  [255,0,255,255],
-  [0,51,255,255],
-  [51,51,255,255],
-  [102,51,255,255],
-  [153,51,255,255],
-  [204,51,255,255],
-  [255,51,255,255],
-  [0,102,255,255],
-  [51,102,255,255],
-  [102,102,255,255],
-  [153,102,255,255],
-  [204,102,255,255],
-  [255,102,255,255],
-  [0,153,255,255],
-  [51,153,255,255],
-  [102,153,255,255],
-  [153,153,255,255],
-  [204,153,255,255],
-  [255,153,255,255],
-  [0,204,255,255],
-  [51,204,255,255],
-  [102,204,255,255],
-  [153,204,255,255],
-  [204,204,255,255],
-  [255,204,255,255],
-  [0,255,255,255],
-  [51,255,255,255],
-  [102,255,255,255],
-  [153,255,255,255],
-  [204,255,255,255],
-  [255, 255, 255, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-  [0, 0, 0, 255],
-]

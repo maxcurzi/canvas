@@ -1,14 +1,11 @@
 import './App.css';
-import GridWs from './components/GridWs';
 import './websafe_colors.css'
-import { firebaseApp, resetGrid } from './Firebase';
+import { firebaseApp } from './Firebase';
 import React, { useState } from 'react';
 import Image from './components/GridWs2';
 import LogIn from './components/LogIn';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-
 import { getPerformance } from "firebase/performance";
-
 import useWebSocket from 'react-use-websocket';
 const WS_URL = 'wss://canvas.maxcurzi.com/wss/';
 
@@ -16,7 +13,7 @@ const gridSize = 64;
 function AppWs() {
   const [grid, setGrid] = useState(Array(gridSize * gridSize).fill(0));
   const [owners, setOwners] = useState(Array(gridSize * gridSize).fill(""));
-  const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(WS_URL, {
+  const { sendMessage, readyState, getWebSocket } = useWebSocket(WS_URL, {
     onOpen: () => {
       console.log('WebSocket connection established!');
     },
@@ -45,9 +42,8 @@ function AppWs() {
 
   return (
     <div className="AppWs">
-      {/* <GridWs isAuthenticated={isAuthenticated} gridSize={gridSize} user={user} gridData={grid} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState} /> */}
       <LogIn auth={auth} />
-      <Image height={640} width={640} imageData={grid} user={user} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState}></Image>
+      <Image height={gridSize} width={gridSize} imageData={grid} user={user} isAuthenticated={isAuthenticated} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState}></Image>
     </div>
   );
 }
