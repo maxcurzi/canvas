@@ -428,8 +428,8 @@ class Game:
             self.rocket_bar.y = y0 + 3
 
             self.owner = owner
-            self.move_dt = 3
-            self.shoot_dt = 3
+            self.move_dt = 1
+            self.shoot_dt = 2
             self.t = 0
             self.dx = 1
             self.xmargin = 52
