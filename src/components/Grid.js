@@ -6,7 +6,7 @@ function mapColorToRGBA(colorValue) {
   return webSafeColors[colorValue];
 }
 
-const Image = ({
+const Grid = ({
   imageData,
   width,
   height,
@@ -106,4 +106,4 @@ const Image = ({
   );
 };
 
-export default Image;
+export default Grid;

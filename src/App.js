@@ -1,7 +1,7 @@
 import './App.css';
 import { firebaseApp } from './Firebase';
 import React, { useState } from 'react';
-import Image from './components/GridWs';
+import Grid from './components/Grid';
 import LogIn from './components/LogIn';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import useWebSocket from 'react-use-websocket';
@@ -40,7 +40,7 @@ function App() {
   return (
     <div className="App">
       <LogIn auth={auth} />
-      <Image height={gridSize} width={gridSize} imageData={grid} user={user} isAuthenticated={isAuthenticated} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState}></Image>
+      <Grid height={gridSize} width={gridSize} imageData={grid} user={user} isAuthenticated={isAuthenticated} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState}></Grid>
     </div>
   );
 }

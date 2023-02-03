@@ -13,3 +13,5 @@ const firebaseConfig = {
 
 export const firebaseApp = initializeApp(firebaseConfig);
 const perf = getPerformance(firebaseApp);
+console.log("Performance instrumentation: "+perf.instrumentationEnabled)
+console.log("Performance collection: "+perf.dataCollectionEnabled)
