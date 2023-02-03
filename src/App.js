@@ -42,10 +42,10 @@ function App() {
 
   return (
     <div className="App">
+      <Grid height={gridSize} width={gridSize} imageData={grid} user={user} isAuthenticated={isAuthenticated} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState} />
       <LogIn auth={auth} />
-      <Grid height={gridSize} width={gridSize} imageData={grid} user={user} isAuthenticated={isAuthenticated} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState}></Grid>
-      <Share shareurl={SHAREURL}></Share>
-      <CookieConsent   style={{ background: "#03C" }}>This website uses cookies to enhance the user experience.</CookieConsent>
+      <Share shareurl={SHAREURL} />
+      <CookieConsent style={{ background: "#03C" }}>This website uses cookies to enhance the user experience.</CookieConsent>
     </div>
   );
 }
