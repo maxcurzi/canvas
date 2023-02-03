@@ -9,7 +9,7 @@ import CookieConsent from "react-cookie-consent";
 import Share from './Share';
 
 const WS_URL = 'wss://canvas.maxcurzi.com/wss/';
-const SHAREURL = "Join me at pixels.today today!"
+const SHAREURL = "Join me at www.pixels.today today!"
 const gridSize = 64;
 function App() {
   const [grid, setGrid] = useState(Array(gridSize * gridSize).fill(0));
