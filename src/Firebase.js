@@ -1,4 +1,5 @@
 import { initializeApp } from 'firebase/app';
+import { getPerformance } from "firebase/performance";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -11,3 +12,4 @@ const firebaseConfig = {
 };
 
 export const firebaseApp = initializeApp(firebaseConfig);
+const perf = getPerformance(firebaseApp);

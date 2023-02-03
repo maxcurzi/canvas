@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Image from './components/GridWs';
 import LogIn from './components/LogIn';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getPerformance } from "firebase/performance";
 import useWebSocket from 'react-use-websocket';
 const WS_URL = 'wss://canvas.maxcurzi.com/wss/';
 
@@ -29,7 +28,6 @@ function App() {
   }
 
   const auth = getAuth(firebaseApp);
-  getPerformance(firebaseApp);
   const webSocket = getWebSocket()
   onAuthStateChanged(auth, (user) => {
     if ((user) && (user.emailVerified)) {
