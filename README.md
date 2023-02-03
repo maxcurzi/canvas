@@ -27,6 +27,7 @@ Technologies I touched on (which may not be present in the current implementatio
 - HTTP and HTTPS
 - Google Cloud computing services (Firebase, CI/CD, Cloud Compute, Cloud Run, Cloud Build, ..)
 - Digital Ocean computing services (Droplets)
+- Git submodules
 
 This repository contains the back-end code that runs on a cloud computer (Digital Ocean rocks!). For the front-end part, check out the [Canvas repo](https://github.com/maxcurzi/canvas).
 
