@@ -48,7 +48,7 @@ const LogIn = (props) => {
   return (
     <div>
       {user ? <button onClick={() => signOut(props.auth)}>LogOut</button> : <section className='authbox left-aligned' id={'firebaseui-auth-container'}></section>}
-      {userVerified ? null : <h3 className='authbox left-aligned'>Verify your email and refresh this page to be able to play.</h3>}
+      {userVerified ? null : <h3 className='authbox center-aligned'>Verify your email and refresh this page to be able to play.</h3>}
     </div>
   )
 }

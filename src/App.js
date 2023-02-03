@@ -6,9 +6,10 @@ import LogIn from './components/LogIn';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import useWebSocket from 'react-use-websocket';
 import CookieConsent from "react-cookie-consent";
+import Share from './Share';
 
 const WS_URL = 'wss://canvas.maxcurzi.com/wss/';
-
+const SHAREURL = "Join me at pixels.today today!"
 const gridSize = 64;
 function App() {
   const [grid, setGrid] = useState(Array(gridSize * gridSize).fill(0));
@@ -43,6 +44,7 @@ function App() {
     <div className="App">
       <LogIn auth={auth} />
       <Grid height={gridSize} width={gridSize} imageData={grid} user={user} isAuthenticated={isAuthenticated} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState}></Grid>
+      <Share shareurl={SHAREURL}></Share>
       <CookieConsent   style={{ background: "#03C" }}>This website uses cookies to enhance the user experience.</CookieConsent>
     </div>
   );
