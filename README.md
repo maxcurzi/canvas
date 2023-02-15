@@ -40,6 +40,7 @@ static), and a
 [Space Invaders clone](https://www.github.com/maxcurzi/canvas-game-invaders)
 with a twist: players can have the aliens shoot, so they can side with either
 humans or invaders.
+
 ![Canvas Space Invaders Clone](canvas-invaders.png "Canvas Invaders")
 
 # Future plans
@@ -49,8 +50,6 @@ I'd like to (maybe):
 - Have an overview of the current state (like, who's winning, or how many
   victories per team)
 - Add a chat or live-feed of events ("John Doe destroyed Alien!")
-- Add a "Share via Twitter" button, which should add a preview of the current
-  canvas to encourage new players to help out
 - Add more games and automatically switch between them every X days
 
 nothing else, I want to keep it minimal (kind of like Wordle and r/place).
