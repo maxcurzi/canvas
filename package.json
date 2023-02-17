@@ -8,6 +8,7 @@
     "react": "^18.2.0",
     "react-cookie-consent": "^8.0.1",
     "react-dom": "^18.2.0",
+    "react-invisible-recaptcha": "^0.3.1",
     "react-scripts": "5.0.1",
     "react-share": "^4.4.1",
     "react-tooltip": "^5.5.2",

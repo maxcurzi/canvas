@@ -41,12 +41,14 @@ function App() {
   });
 
   return (
-    <div className="App">
+    <div className="App" style={{
+      margin: "4%"
+    }}>
       <Grid height={gridSize} width={gridSize} imageData={grid} user={user} isAuthenticated={isAuthenticated} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState} />
       <LogIn auth={auth} />
       <Share shareurl={SHAREURL} />
       <CookieConsent style={{ background: "#03C" }}>This website uses cookies to enhance the user experience.</CookieConsent>
-    </div>
+    </div >
   );
 }
 

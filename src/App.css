@@ -1,21 +1,12 @@
 .App {
   text-align: center;
-  /* width: 10px; */
-  /* height: 100px; */
-  /* margin: 10px; */
 }
 
-.authbox {
-  width: 400px;
-  justify-content: left;
-}
-
-button.clicked,
-button:hover {
-  background-color: rgb(60, 67, 154);
-  border-color: rgb(60, 67, 154);
-  color: white;
-  outline-color: rgb(60, 67, 154);
+button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 button,
@@ -43,4 +34,13 @@ button.firebaseui-id-submit.mdl-button--raised.mdl-button--colored {
   text-align: center;
   text-transform: uppercase;
   vertical-align: middle;
+}
+
+button.clicked,
+button:hover,
+button.firebaseui-id-submit.mdl-button--raised.mdl-button--colored:hover {
+  background-color: rgb(60, 67, 154);
+  border-color: rgb(60, 67, 154);
+  color: white;
+  outline-color: rgb(60, 67, 154);
 }

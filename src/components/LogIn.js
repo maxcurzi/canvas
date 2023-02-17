@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import 'firebaseui/dist/firebaseui.css';
 import {
   EmailAuthProvider,
@@ -22,8 +22,7 @@ const LogIn = (props) => {
       callbacks: {
         signInSuccessWithAuthResult: function (authResult) {
           var user = authResult.user;
-          if (authResult.additionalUserInfo.isNewUser)
-          {
+          if (authResult.additionalUserInfo.isNewUser) {
             sendEmailVerification(user);
           }
           return false;
@@ -31,11 +30,11 @@ const LogIn = (props) => {
       },
     };
 
-    if (user===null) {
+    if (user === null) {
       const ui = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(props.auth);
       ui.start('#firebaseui-auth-container', uiConfig);
     }
-  },[user, props.auth])
+  }, [user, props.auth])
 
   // Listen to the current Auth state
   onAuthStateChanged(props.auth, (user) => {
@@ -47,8 +46,8 @@ const LogIn = (props) => {
 
   return (
     <div>
-      {user ? <button onClick={() => signOut(props.auth)}>LogOut</button> : <section className='authbox left-aligned' id={'firebaseui-auth-container'}></section>}
-      {userVerified ? null : <h3 className='authbox center-aligned'>Verify your email and refresh this page to be able to play.</h3>}
+      {user ? <button onClick={() => signOut(props.auth)}>LogOut</button> : <section id={'firebaseui-auth-container'}></section>}
+      {userVerified ? null : <h3>Verify your email and refresh this page to be able to play.</h3>}
     </div>
   )
 }
