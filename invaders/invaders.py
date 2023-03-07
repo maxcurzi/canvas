@@ -2,18 +2,18 @@
 """ Simple space invaders clone, to be used as a backend game for Canvas.
 TODO: Consider config file
 """
-import pygame
-from enum import Enum, auto
-from PIL import Image, ImageOps
+import argparse
+import os
 import random
 from collections import deque
-from itertools import product
-import os
-import argparse
 from datetime import datetime
-import numpy as np
-
+from enum import Enum, auto
+from itertools import product
 from pathlib import Path
+
+import numpy as np
+import pygame
+from PIL import Image, ImageOps
 
 base_path = Path(os.path.dirname(__file__))
 human_path = base_path / "assets" / "human.png"
@@ -21,12 +21,17 @@ alien_path = base_path / "assets" / "alien.png"
 
 
 class Team(Enum):
+    """Teams for the game."""
+
     HUMANS = auto()
     ALIENS = auto()
     SHIELDS = auto()
 
 
 class Colors(Enum):
+    """Colors for the game. It uses RGB values that should be within the
+    web-safe colours range."""
+
     COLOR_KEY = (0, 0, 0)  # Transparency color key
     BLACK = (0, 0, 0)
     HUMAN = (0, 255, 0)
@@ -45,9 +50,9 @@ class Game:
         framerate: float = 60,
         use_defaults=True,
     ) -> None:
-        pygame.init()
+        pygame.init()  # pylint:disable=no-member
 
-        self.resolution = (width, height)
+        self._resolution = (width, height)
         self.screen = pygame.display.set_mode((width, height))
         self.framerate = framerate
         self.clock = pygame.time.Clock()
@@ -89,22 +94,28 @@ class Game:
         """Each pixel can have an owner, for example when a player clicks on the
         spaceship to shoot a rocket, the pixels composing the rocket will
         'belong' to that user."""
-        om = {}
+        owners_map = {}
         for entity in [*self.human_rockets, *self.enemies_rockets, *self.shields]:
-            x, y, w, h = entity.rect
-            for dx, dy in product(range(w), range(h)):
+            x_coord, y_coord, width, height = entity.rect
+            for dx, dy in product(range(width), range(height)):
                 if (
-                    y + dy < self.screen.get_width()
-                    and x + dx < self.screen.get_height()
+                    y_coord + dy < self.screen.get_width()
+                    and x_coord + dx < self.screen.get_height()
                 ):
-                    om[(y + dy, x + dx)] = entity.owner
-        return om
+                    owners_map[(y_coord + dy, x_coord + dx)] = entity.owner
+        return owners_map
 
     @property
     def frame(self):
+        """Returns the current game frame as a numpy array."""
         return Image.fromarray(np.flipud(pygame.surfarray.array3d(self.screen))).rotate(
             -90
         )
+
+    @property
+    def resolution(self) -> tuple[int, int]:
+        """Returns the game resolution as a tuple (width, height)."""
+        return self._resolution
 
     @property
     def finished(self) -> bool:
@@ -123,7 +134,7 @@ class Game:
             (37, 13),
         ]
 
-        for (x, y) in alien_locations:
+        for x, y in alien_locations:
             alien = Game.Alien(x, y)
             self.aliens.add(alien)
             self.all_sprites.add(alien)
@@ -156,8 +167,10 @@ class Game:
         """Off-screen elements still live in the game, but are not needed anymore.
         We just remove them"""
         for entity in [*self.human_rockets, *self.enemies_rockets, *self.shields]:
-            x, y, w, h = entity.rect
-            if not (0 <= x < self.resolution[0] and 0 <= y < self.resolution[1]):
+            x_pos, y_pos, width, height = entity.rect
+            if not (
+                0 <= x_pos < self._resolution[0] and 0 <= y_pos < self._resolution[1]
+            ):
                 # Remove entity from the groups (the removal silently continues if the entity doesn't exist)
                 self.human_rockets.remove(entity)
                 self.enemies_rockets.remove(entity)
@@ -300,8 +313,8 @@ class Game:
 
         THICKNESS = 1
 
-        def __init__(self, len) -> None:
-            self.meter_bar = pygame.Surface((len, self.THICKNESS))
+        def __init__(self, length) -> None:
+            self.meter_bar = pygame.Surface((length, self.THICKNESS))
             self.rect = self.meter_bar.get_rect()
 
         @property
@@ -512,7 +525,7 @@ def run_random_game(framerate):
     game = Game(framerate=framerate, use_defaults=True)
     t = 0
     game.update()
-    while game._winner() == None:
+    while game._winner() is None:
         t += 1
         if t % random.randint(5, 8) == 0:
             game.click_at(
@@ -523,6 +536,7 @@ def run_random_game(framerate):
 
 
 def main(args):
+    """Main function, runs forever one game after another"""
     if args.dummy:
         os.environ["SDL_VIDEODRIVER"] = "dummy"
     while True:
@@ -538,6 +552,7 @@ def main(args):
 
 
 def parse_args():
+    """Parse command line arguments"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-f",
