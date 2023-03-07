@@ -1,14 +1,16 @@
 #!/usr/bin/env python
+import argparse
 import asyncio
 import json
-import websockets
+import logging
+import ssl
+
 import numpy as np
+import websockets
 from invaders.invaders import Game as SpaceInvaders
 from place.place import App as Place
+
 from games.interface import CanvasApp
-import ssl
-import logging
-import argparse
 from utils import PubSub
 
 
@@ -24,8 +26,6 @@ class CanvasPlace(Place, CanvasApp):
     pass
 
 
-PUBSUB = PubSub()
-
 # Create and setup logger
 logger = logging.getLogger("WS Server")
 ch = logging.StreamHandler()
@@ -36,12 +36,15 @@ logger.addHandler(ch)
 
 # Commands (clicks) received
 COMMANDS = asyncio.Queue()
+# PUB SUB for game state
+PUBSUB = PubSub()
 
 
 async def handler(websocket):
+    """Handle connections in a producer/consumer fashion."""
     consumer_task = asyncio.create_task(consumer_handler(websocket))
     producer_task = asyncio.create_task(producer_handler(websocket))
-    done, pending = await asyncio.wait(
+    _done, pending = await asyncio.wait(
         [consumer_task, producer_task],
         return_when=asyncio.FIRST_COMPLETED,
     )
@@ -50,68 +53,96 @@ async def handler(websocket):
 
 
 async def consumer_handler(websocket):
+    """Handle incoming messages from the client. It queues users commands"""
     async for message in websocket:
-        logger.debug("Received:" + message)
+        logger.debug("Received: %s", message)
         await COMMANDS.put(message)
 
 
 async def producer_handler(websocket):
+    """Handle outgoing messages to the client. It sends the game state"""
     async for value in PUBSUB.subscribe():
         await websocket.send(value)
 
 
+class GameManager:
+    def __init__(self, game: CanvasApp) -> None:
+        self.game = game
+
+    def read_user_commands(self) -> dict | None:
+        try:
+            command = COMMANDS.get_nowait()
+        except asyncio.QueueEmpty:
+            return None
+
+        try:
+            command = json.loads(command)
+            if isinstance(command, dict) and command.keys() >= {
+                "x",
+                "y",
+                "user",
+            }:
+                return command
+            logger.debug("Received wrong message %s", command)
+        except json.decoder.JSONDecodeError as exc:
+            raise InternalError(f"Received wrong message {command}") from exc
+        return None
+
+    def execute_user_command(self, command: dict):
+        self.game.click_at(
+            x_pos=command["x"], y_pos=command["y"], owner=command["user"]
+        )
+
+    def update_game_state(self):
+        self.game.update()
+
+    def game_over(self) -> bool:
+        return self.game.finished
+
+    def game_frame(self) -> np.ndarray:
+        return np.array(self.game.frame.convert("P")).flatten().tolist()
+
+    def owners(self) -> dict:
+        x_max = self.game.resolution[0]
+        owners_dict = {}
+        owners = self.game.owners_map
+        for (x, y), owner in owners.items():
+            owners_dict[x * x_max + y] = owner
+        return owners
+
+    def broadcast_game_state(self):
+        # We send the whole frame every time. Not a great solution for large
+        # canvases but ok for small ones.
+        message_dict = {"pixels": self.game_frame(), "owners": self.owners()}
+        message = json.dumps(message_dict)
+        PUBSUB.publish(message)
+
+
 async def game_producer(framerate: float = 1):
+    """Starts the game and broadcasts it to the clients."""
     logger.info("Broadcasting game...")
     while True:
+        # Never stop. Just restart a new game afte the previous one is over
         logger.info("Game start")
-        game = CanvasInvaders(framerate=framerate)
-        x_max = game.resolution[0]
-        y_max = game.resolution[1]
-        t = 0
-        while not game.finished:
-            t += 1
-            while True:
-                try:
-                    command = COMMANDS.get_nowait()
-                    try:
-                        command = json.loads(command)
-                        if isinstance(command, dict) and command.keys() >= {
-                            "x",
-                            "y",
-                            "user",
-                        }:
-                            game.click_at(
-                                x=command["x"], y=command["y"], owner=command["user"]
-                            )
-                        else:
-                            logger.debug(f"Received wrong message:{command}")
-                    except json.decoder.JSONDecodeError as E:
-                        logger.debug(f"Received wrong message:{command}")
-                        raise InternalError from E
-
-                except asyncio.QueueEmpty:
-                    break
-                except InternalError:
-                    break
+        game_manager = GameManager(CanvasInvaders(framerate=framerate))
+        while not game_manager.game_over():
+            try:
+                while (command := game_manager.read_user_commands()) is not None:
+                    game_manager.execute_user_command(command)
+            except InternalError as exc:
+                # We catch internal errors and log them but we don't stop the game
+                logger.error(exc)
 
             # Async sleep as much as possible until the next update.
-            # Pygame updates are blocking and not async
+            # This is because pygame updates are blocking and not async
             await asyncio.sleep(max(0.01, 1 / framerate - 0.03))
 
-            game.update()
-            gameframe = np.array(game.frame.convert("P")).flatten().tolist()
-            owners_dict = {}
-            owners = game.owners_map
-            for ((x, y), owner) in owners.items():
-                owners_dict[x * x_max + y] = owner
-            # We send the whole frame every time. Not a great solution for large
-            # canvases but ok for small ones.
-            message_dict = {"pixels": gameframe, "owners": owners_dict}
-            message = json.dumps(message_dict)
-            PUBSUB.publish(message)
+            game_manager.update_game_state()
+            game_manager.broadcast_game_state()
 
 
 async def main(framerate: float, ws_port: int, ws_address: str, ssl_context):
+    """Main function. Starts the websocket server and the game producer. Serves continuously."""
     async with websockets.serve(handler, ws_address, ws_port, ssl=ssl_context):  # type: ignore
         await game_producer(framerate=framerate)
 
@@ -145,8 +176,7 @@ def parse_args():
         help="Use unsecure web sockets",
         action="store_true",
     )
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
@@ -154,9 +184,9 @@ if __name__ == "__main__":
     if not args.unsecure:
         # HTTPS/SSL setup
         ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        ssl_cert = "/etc/letsencrypt/live/canvas.maxcurzi.com/fullchain.pem"
-        ssl_key = "/etc/letsencrypt/live/canvas.maxcurzi.com/privkey.pem"
-        ssl_context.load_cert_chain(ssl_cert, keyfile=ssl_key)
+        SSL_CERT = "/etc/letsencrypt/live/canvas.maxcurzi.com/fullchain.pem"
+        SSL_KEY = "/etc/letsencrypt/live/canvas.maxcurzi.com/privkey.pem"
+        ssl_context.load_cert_chain(SSL_CERT, keyfile=SSL_KEY)
     else:
         ssl_context = None
     asyncio.run(
