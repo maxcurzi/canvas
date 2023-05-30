@@ -2,7 +2,7 @@ import './App.css';
 import { firebaseApp } from './Firebase';
 import React, { useState } from 'react';
 import Grid from './components/Grid';
-import LogIn from './components/LogIn';
+// import LogIn from './components/LogIn';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import useWebSocket from 'react-use-websocket';
 import CookieConsent from "react-cookie-consent";
@@ -27,7 +27,8 @@ function App() {
   });
   const [user, setUser] = useState(null)
   const isAuthenticated = () => {
-    return user !== null;
+    return true;
+    // return user !== null;
   }
 
   const auth = getAuth(firebaseApp);
@@ -45,7 +46,7 @@ function App() {
       margin: "4%"
     }}>
       <Grid height={gridSize} width={gridSize} imageData={grid} user={user} isAuthenticated={isAuthenticated} owners={owners} sendMessage={sendMessage} webSocket={webSocket} readyState={readyState} />
-      <LogIn auth={auth} />
+      {/* <LogIn auth={auth} /> */}
       <Share shareurl={SHAREURL} />
       <CookieConsent style={{ background: "#03C" }}>This website uses cookies to enhance the user experience.</CookieConsent>
     </div >

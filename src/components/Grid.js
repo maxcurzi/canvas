@@ -81,7 +81,7 @@ const Grid = ({
       y = y >= width ? width - 1 : y;
 
       if ((readyState === 1) && isAuthenticated()) {
-        sendMessage(JSON.stringify({ x: Math.floor(x), y: Math.floor(y), user: user.uid == null ? "NA" : user.displayName }))
+        sendMessage(JSON.stringify({ x: Math.floor(x), y: Math.floor(y), user: user == null ? "" : user.displayName }))
       }
       setLastClickTime(now_t);
     }
