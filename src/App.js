@@ -8,7 +8,7 @@ import useWebSocket from 'react-use-websocket';
 import CookieConsent from "react-cookie-consent";
 import Share from './Share';
 
-const WS_URL = 'wss://canvas.maxcurzi.com/wss/';
+const WS_URL = 'ws://localhost:8765/'; // process.env.REACT_APP_WS_URL || 'wss://canvas.maxcurzi.com/wss/';
 const SHAREURL = "Join me at www.pixels.today today!"
 const gridSize = 64;
 function App() {

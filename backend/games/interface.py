@@ -32,7 +32,7 @@ class CanvasApp(ABC):
         """
 
     @abstractmethod
-    def click_at(self, x_pos: int, y_pos: int, owner=None) -> None:
+    def click_at(self, x: int, y: int, owner=None) -> None:
         """User inputs are clicks to the grid pixels, we add these inputs to a
         queue for later processing, and we store an identifier of who clicked
         it, for later retrieval/identification of who caused a certain effect."""

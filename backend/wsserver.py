@@ -7,23 +7,26 @@ import ssl
 
 import numpy as np
 import websockets
-from invaders.invaders import Game as SpaceInvaders
-from place.place import App as Place
-
+import importlib
 from games.interface import CanvasApp
 from utils import PubSub
+
+from games.game_config import GAMES as GAME_CONFIG
 
 
 class InternalError(Exception):
     pass
 
 
-class CanvasInvaders(SpaceInvaders, CanvasApp):
-    pass
 
-
-class CanvasPlace(Place, CanvasApp):
-    pass
+def get_game_class(game_name):
+    if game_name not in GAME_CONFIG:
+        raise ValueError(f"Unknown game: {game_name}")
+    module_path = GAME_CONFIG[game_name]["module"]
+    module = importlib.import_module(module_path)
+    game_class = getattr(module, "Game")
+    # Dynamically create a class that inherits from both the game and CanvasApp
+    return type(f"Canvas{game_name.capitalize()}", (game_class, CanvasApp), {})
 
 
 # Create and setup logger
@@ -38,6 +41,8 @@ logger.addHandler(ch)
 COMMANDS = asyncio.Queue()
 # PUB SUB for game state
 PUBSUB = PubSub()
+# Store the current game state for new clients to fetch immediately
+CURRENT_GAME_STATE = None
 
 
 async def handler(websocket):
@@ -61,6 +66,11 @@ async def consumer_handler(websocket):
 
 async def producer_handler(websocket):
     """Handle outgoing messages to the client. It sends the game state"""
+    global CURRENT_GAME_STATE
+    # Send current game state immediately to new clients
+    if CURRENT_GAME_STATE:
+        await websocket.send(CURRENT_GAME_STATE)
+    # Then subscribe to future updates
     async for value in PUBSUB.subscribe():
         await websocket.send(value)
 
@@ -90,7 +100,7 @@ class GameManager:
 
     def execute_user_command(self, command: dict):
         self.game.click_at(
-            x_pos=command["x"], y_pos=command["y"], owner=command["user"]
+            x=command["x"], y=command["y"], owner=command["user"]
         )
 
     def update_game_state(self):
@@ -106,45 +116,41 @@ class GameManager:
         x_max = self.game.resolution[0]
         owners_dict = {}
         owners = self.game.owners_map
-        for (x, y), owner in owners.items():
-            owners_dict[x * x_max + y] = owner
-        return owners
+        for (y, x), owner in owners.items():
+            owners_dict[y * x_max + x] = owner
+        return owners_dict
 
     def broadcast_game_state(self):
         # We send the whole frame every time. Not a great solution for large
         # canvases but ok for small ones.
+        global CURRENT_GAME_STATE
         message_dict = {"pixels": self.game_frame(), "owners": self.owners()}
         message = json.dumps(message_dict)
+        CURRENT_GAME_STATE = message  # Store for new clients
         PUBSUB.publish(message)
 
 
-async def game_producer(framerate: float = 1):
+async def game_producer(game_class, framerate: float = 1):
     """Starts the game and broadcasts it to the clients."""
     logger.info("Broadcasting game...")
     while True:
-        # Never stop. Just restart a new game afte the previous one is over
         logger.info("Game start")
-        game_manager = GameManager(CanvasInvaders(framerate=framerate))
+        game_manager = GameManager(game_class(framerate=framerate))
         while not game_manager.game_over():
             try:
                 while (command := game_manager.read_user_commands()) is not None:
                     game_manager.execute_user_command(command)
             except InternalError as exc:
-                # We catch internal errors and log them but we don't stop the game
                 logger.error(exc)
-
-            # Async sleep as much as possible until the next update.
-            # This is because pygame updates are blocking and not async
             await asyncio.sleep(max(0.01, 1 / framerate - 0.03))
-
             game_manager.update_game_state()
             game_manager.broadcast_game_state()
 
 
-async def main(framerate: float, ws_port: int, ws_address: str, ssl_context):
+async def main(game_class, framerate: float, ws_port: int, ws_address: str, ssl_context=None):
     """Main function. Starts the websocket server and the game producer. Serves continuously."""
     async with websockets.serve(handler, ws_address, ws_port, ssl=ssl_context):  # type: ignore
-        await game_producer(framerate=framerate)
+        await game_producer(game_class, framerate=framerate)
 
 
 def parse_args():
@@ -176,6 +182,13 @@ def parse_args():
         help="Use unsecure web sockets",
         action="store_true",
     )
+    parser.add_argument(
+        "-g",
+        "--game",
+        type=str,
+        help="Game to run (invaders, place)",
+        default="invaders",
+    )
     return parser.parse_args()
 
 
@@ -184,13 +197,17 @@ if __name__ == "__main__":
     if not args.unsecure:
         # HTTPS/SSL setup
         ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        SSL_CERT = "/etc/letsencrypt/live/canvas.maxcurzi.com/fullchain.pem"
-        SSL_KEY = "/etc/letsencrypt/live/canvas.maxcurzi.com/privkey.pem"
+        import os
+        SSL_CERT = os.environ.get("SSL_CERT_PATH", "cert.pem")
+        SSL_KEY = os.environ.get("SSL_KEY_PATH", "key.pem")
         ssl_context.load_cert_chain(SSL_CERT, keyfile=SSL_KEY)
     else:
         ssl_context = None
+    # Dynamically get the game class
+    game_class = get_game_class(args.game)
     asyncio.run(
         main(
+            game_class=game_class,
             framerate=args.framerate,
             ws_port=args.port,
             ws_address=args.address,

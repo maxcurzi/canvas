@@ -77,8 +77,8 @@ const Grid = ({
       // Adjust for off-by-one error (happens on some zoom levels)
       x = x < 0 ? 0 : x;
       y = y < 0 ? 0 : y;
-      x = x >= height ? height - 1 : x;
-      y = y >= width ? width - 1 : y;
+      x = x >= width ? width - 1 : x;
+      y = y >= height ? height - 1 : y;
 
       if ((readyState === 1) && isAuthenticated()) {
         sendMessage(JSON.stringify({ x: Math.floor(x), y: Math.floor(y), user: user == null ? "" : user.displayName }))
