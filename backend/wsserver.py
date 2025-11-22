@@ -28,21 +28,33 @@ def get_game_class(game_name):
     # Dynamically create a class that inherits from both the game and CanvasApp
     return type(f"Canvas{game_name.capitalize()}", (game_class, CanvasApp), {})
 
+def get_game_config(game_name):
+    """Get canvas dimensions for a game"""
+    if game_name not in GAME_CONFIG:
+        raise ValueError(f"Unknown game: {game_name}")
+    config = GAME_CONFIG[game_name]
+    return {
+        "width": config.get("width", 64),
+        "height": config.get("height", 64)
+    }
+
 
 # Create and setup logger
 logger = logging.getLogger("WS Server")
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(asctime)s | %(name)s | [%(levelname)s]: %(message)s")
+formatter = logging.Formatter("%asctime)s | %(name)s | [%(levelname)s]: %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 # Commands (clicks) received
 COMMANDS = asyncio.Queue()
-# PUB SUB for game state
+# Game state updates
 PUBSUB = PubSub()
-# Store the current game state for new clients to fetch immediately
+# Current game state for new clients
 CURRENT_GAME_STATE = None
+# Last full state for new client connections
+LAST_FULL_STATE = None
 
 
 async def handler(websocket):
@@ -66,9 +78,11 @@ async def consumer_handler(websocket):
 
 async def producer_handler(websocket):
     """Handle outgoing messages to the client. It sends the game state"""
-    global CURRENT_GAME_STATE
-    # Send current game state immediately to new clients
-    if CURRENT_GAME_STATE:
+    global CURRENT_GAME_STATE, LAST_FULL_STATE
+    # Send last full state immediately to new clients, fallback to current state
+    if LAST_FULL_STATE:
+        await websocket.send(LAST_FULL_STATE)
+    elif CURRENT_GAME_STATE:
         await websocket.send(CURRENT_GAME_STATE)
     # Then subscribe to future updates
     async for value in PUBSUB.subscribe():
@@ -78,6 +92,10 @@ async def producer_handler(websocket):
 class GameManager:
     def __init__(self, game: CanvasApp) -> None:
         self.game = game
+        self.last_broadcast_state = None
+        self.first_broadcast = True
+        self.frame_count = 0
+        self.full_state_interval = 60  # Send full state every 60 frames
 
     def read_user_commands(self) -> dict | None:
         try:
@@ -120,22 +138,56 @@ class GameManager:
             owners_dict[y * x_max + x] = owner
         return owners_dict
 
+    def get_pixel_updates(self) -> dict:
+        """Get only the pixels that have changed since last broadcast"""
+        # Check if game has changed_pixels tracking
+        if hasattr(self.game, 'get_changed_pixels'):
+            changed_indices = self.game.get_changed_pixels()
+            updates = {}
+            for idx in changed_indices:
+                updates[str(idx)] = self.game.pixels[idx].value
+            return updates
+        else:
+            # Fallback to full state if game doesn't support tracking
+            return None
+
     def broadcast_game_state(self):
-        # We send the whole frame every time. Not a great solution for large
-        # canvases but ok for small ones.
+        # Always send full state for now
         global CURRENT_GAME_STATE
-        message_dict = {"pixels": self.game_frame(), "owners": self.owners()}
+        
+        self.frame_count += 1
+        
+        # Always send full state
+        message_dict = {
+            "type": "full",
+            "pixels": self.game_frame(),
+            "owners": self.owners(),
+            "meta": {
+                "width": self.game.resolution[0],
+                "height": self.game.resolution[1]
+            }
+        }
+        self.first_broadcast = False
+        
         message = json.dumps(message_dict)
         CURRENT_GAME_STATE = message  # Store for new clients
+        if message_dict["type"] == "full":
+            LAST_FULL_STATE = message  # Store last full state
         PUBSUB.publish(message)
 
 
-async def game_producer(game_class, framerate: float = 1):
+async def game_producer(game_class, game_name, framerate: float = 1):
     """Starts the game and broadcasts it to the clients."""
     logger.info("Broadcasting game...")
+    config = get_game_config(game_name)
     while True:
         logger.info("Game start")
-        game_manager = GameManager(game_class(framerate=framerate))
+        game_instance = game_class(
+            width=config["width"],
+            height=config["height"],
+            framerate=framerate
+        )
+        game_manager = GameManager(game_instance)
         while not game_manager.game_over():
             try:
                 while (command := game_manager.read_user_commands()) is not None:
@@ -147,10 +199,11 @@ async def game_producer(game_class, framerate: float = 1):
             game_manager.broadcast_game_state()
 
 
-async def main(game_class, framerate: float, ws_port: int, ws_address: str, ssl_context=None):
+
+async def main(game_name, game_class, framerate: float, ws_port: int, ws_address: str, ssl_context=None):
     """Main function. Starts the websocket server and the game producer. Serves continuously."""
     async with websockets.serve(handler, ws_address, ws_port, ssl=ssl_context):  # type: ignore
-        await game_producer(game_class, framerate=framerate)
+        await game_producer(game_class, game_name, framerate=framerate)
 
 
 def parse_args():
@@ -207,6 +260,7 @@ if __name__ == "__main__":
     game_class = get_game_class(args.game)
     asyncio.run(
         main(
+            game_name=args.game,
             game_class=game_class,
             framerate=args.framerate,
             ws_port=args.port,
