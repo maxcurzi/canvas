@@ -168,6 +168,12 @@ body {
   font-size: 0.85rem;
 }
 
+.game-view-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
 .game-view-canvas {
   flex: 1;
   display: flex;
@@ -175,6 +181,77 @@ body {
   justify-content: center;
   overflow: auto;
   background: #050508;
+}
+
+.chat-panel {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border);
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.chat-message {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  padding: 0.2rem 0;
+  word-break: break-word;
+}
+
+.chat-message-player {
+  color: var(--accent);
+  font-weight: 600;
+  margin-right: 0.4rem;
+}
+
+.chat-message-text {
+  color: var(--text);
+}
+
+.chat-input-form {
+  display: flex;
+  padding: 0.5rem;
+  border-top: 1px solid var(--border);
+  gap: 0.4rem;
+}
+
+.chat-input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.chat-input:focus {
+  border-color: var(--accent);
+}
+
+.chat-send-button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+}
+
+.chat-send-button:hover {
+  background: var(--accent-hover);
 }
 
 .game-canvas-container {

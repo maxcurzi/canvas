@@ -1,5 +1,6 @@
 import { useGameStore } from '../stores/game-store'
 import { GameCanvas } from '../components/GameCanvas'
+import { ChatPanel } from '../components/ChatPanel'
 
 export function GameView() {
   const currentGameId = useGameStore((s) => s.currentGameId)
@@ -19,8 +20,11 @@ export function GameView() {
           {currentGameId} — {width}×{height}
         </span>
       </div>
-      <div className="game-view-canvas">
-        <GameCanvas />
+      <div className="game-view-body">
+        <div className="game-view-canvas">
+          <GameCanvas />
+        </div>
+        <ChatPanel />
       </div>
     </div>
   )

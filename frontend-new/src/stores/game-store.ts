@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { GameInfo, Color, ServerMessage } from '../lib/protocol'
+import type { GameInfo, Color, ServerMessage, ChatMessage } from '../lib/protocol'
 import { WsClient, type ConnectionState } from '../lib/ws-client'
 
 const TILE_SIZE = 16
@@ -18,6 +18,9 @@ type GameState = {
   height: number
   palette: Color[]
   pixels: Uint8Array
+
+  // Chat
+  chatMessages: ChatMessage[]
 
   // Actions
   connect: (url: string) => void
@@ -38,6 +41,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   height: 0,
   palette: [],
   pixels: new Uint8Array(0),
+  chatMessages: [],
 
   connect: (url: string) => {
     const existing = get().client
@@ -70,6 +74,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       height: 0,
       palette: [],
       pixels: new Uint8Array(0),
+      chatMessages: [],
     })
   },
 
@@ -128,7 +133,8 @@ function handleServerMessage(
       break
     }
     case 'chat': {
-      // TODO: chat state
+      const state = get()
+      set({ chatMessages: [...state.chatMessages.slice(-99), msg] })
       break
     }
     case 'error': {
