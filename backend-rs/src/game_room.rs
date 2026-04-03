@@ -51,6 +51,20 @@ impl GameRoom {
         });
     }
 
+    pub async fn handle_chat(&self, text: String, player_id: String) {
+        let mut game = self.game.lock().await;
+        game.handle_input(GameInput {
+            x: 0,
+            y: 0,
+            kind: InputKind::Chat(text),
+            player_id,
+        });
+    }
+
+    pub fn broadcast_chat(&self, data: Arc<Vec<u8>>) -> Result<usize, broadcast::error::SendError<Arc<Vec<u8>>>> {
+        self.tx.send(data)
+    }
+
     pub async fn tick(&self) {
         let mut game = self.game.lock().await;
         game.update();

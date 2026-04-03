@@ -1,8 +1,8 @@
 use crate::game_room::GameRoom;
 use axum::extract::ws::{Message, WebSocket};
 use canvas_protocol::{
-    decode_client_message, encode_server_message, ClientMessage, GameInfo, GameListMessage,
-    ServerMessage,
+    decode_client_message, encode_server_message, ClientMessage, ChatMessage, GameInfo,
+    GameListMessage, ServerMessage,
 };
 use dashmap::DashMap;
 use futures_util::{SinkExt, StreamExt};
@@ -128,8 +128,23 @@ impl GameRegistry {
                                         current_room = None;
                                         broadcast_rx = None;
                                     }
-                                    ClientMessage::Chat(_chat) => {
-                                        // TODO: implement chat routing
+                                    ClientMessage::Chat(chat) => {
+                                        if let Some(ref room) = current_room {
+                                            room.handle_chat(chat.text.clone(), player_id.clone()).await;
+                                            // Broadcast chat message to all players in room
+                                            let chat_msg = ServerMessage::Chat(ChatMessage {
+                                                player_id: player_id.clone(),
+                                                text: chat.text,
+                                                timestamp_ms: std::time::SystemTime::now()
+                                                    .duration_since(std::time::UNIX_EPOCH)
+                                                    .unwrap_or_default()
+                                                    .as_millis() as u64,
+                                            });
+                                            if let Ok(encoded) = encode_server_message(&chat_msg) {
+                                                let data = Arc::new(encoded);
+                                                let _ = room.broadcast_chat(data);
+                                            }
+                                        }
                                     }
                                 }
                             }
