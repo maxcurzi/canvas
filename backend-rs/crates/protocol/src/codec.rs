@@ -1,7 +1,7 @@
 use crate::messages::{ServerMessage, ClientMessage};
 
 pub fn encode_server_message(msg: &ServerMessage) -> Result<Vec<u8>, CodecError> {
-    let msgpack_bytes = rmp_serde::to_vec(msg)
+    let msgpack_bytes = rmp_serde::to_vec_named(msg)
         .map_err(|e| CodecError::Serialize(e.to_string()))?;
     zstd::encode_all(msgpack_bytes.as_slice(), 3)
         .map_err(|e| CodecError::Compress(e.to_string()))
@@ -15,7 +15,7 @@ pub fn decode_server_message(data: &[u8]) -> Result<ServerMessage, CodecError> {
 }
 
 pub fn encode_client_message(msg: &ClientMessage) -> Result<Vec<u8>, CodecError> {
-    let msgpack_bytes = rmp_serde::to_vec(msg)
+    let msgpack_bytes = rmp_serde::to_vec_named(msg)
         .map_err(|e| CodecError::Serialize(e.to_string()))?;
     zstd::encode_all(msgpack_bytes.as_slice(), 3)
         .map_err(|e| CodecError::Compress(e.to_string()))
