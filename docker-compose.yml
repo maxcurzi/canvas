@@ -1,0 +1,20 @@
+services:
+  backend:
+    build:
+      context: ./backend-rs
+      dockerfile: Dockerfile
+    ports:
+      - "8765:8765"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend-new
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_WS_URL=ws://localhost:8765/ws
+    depends_on:
+      - backend
+    restart: unless-stopped
